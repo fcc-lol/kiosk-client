@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { socket, AVAILABLE_URLS, SOCKET_EVENTS } from "./socket";
 
-const Container = styled.div`
+const Display = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
+  cursor: none;
 `;
 
-const FullIframe = styled.iframe`
+const App = styled.iframe`
   flex: 1;
   width: 100%;
   border: none;
@@ -66,14 +67,14 @@ function SpringBoard() {
   }, []);
 
   return (
-    <Container>
+    <Display>
       <StatusIndicator isConnected={isConnected} />
-      <FullIframe
+      <App
         src={currentUrl}
         title="Current URL"
         sandbox="allow-same-origin allow-scripts"
       />
-    </Container>
+    </Display>
   );
 }
 
