@@ -13,10 +13,7 @@
     />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>FCC Kiosk</title>
@@ -30,12 +27,14 @@
         overscroll-behavior: none;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        overflow: hidden;
       }
       #root {
         height: 100%;
         width: 100%;
         display: flex;
         min-height: 100vh;
+        overflow: hidden;
       }
     </style>
   </head>

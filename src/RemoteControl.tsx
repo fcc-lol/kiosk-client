@@ -8,6 +8,10 @@ const Container = styled.div`
   width: 100%;
   box-sizing: border-box;
   max-width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   @media (max-width: 768px) {
     padding: 16px;
@@ -36,6 +40,8 @@ const AppSwitcher = styled.div`
   flex-direction: column;
   gap: 1rem;
   width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const App = styled.div<{ $isActive: boolean }>`
