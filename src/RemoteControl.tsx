@@ -1,82 +1,75 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
 import { socket, AVAILABLE_URLS, SOCKET_EVENTS } from "./socket";
 
 const Container = styled.div`
   padding: 20px;
-  max-width: 800px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 `;
 
 const Title = styled.h1`
-  color: #333;
+  color: #fff;
   margin: 0;
-`;
 
-const KioskLink = styled(Link)`
-  padding: 8px 16px;
-  background: #4caf50;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  &:hover {
-    background: #45a049;
+  @media (max-width: 600px) {
+    font-size: 24px;
   }
 `;
 
-const UrlList = styled.div`
-  display: grid;
-  gap: 16px;
+const AppSwitcher = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
 `;
 
-const UrlCard = styled.div<{ isActive: boolean }>`
-  padding: 16px;
-  border-radius: 8px;
-  background: ${(props) => (props.isActive ? "#e3f2fd" : "#f5f5f5")};
-  border: 1px solid ${(props) => (props.isActive ? "#2196f3" : "#ddd")};
+const App = styled.div<{ $isActive: boolean }>`
+  padding: 1.25rem 2rem;
+  border-radius: 3rem;
+  background: ${(props) =>
+    props.$isActive ? "rgba(255, 255, 255, 1)" : "rgba(255, 255, 255, 0.1)"};
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  color: ${(props) =>
+    props.$isActive ? "rgba(0, 0, 0, 1)" : "rgba(255, 255, 255, 1)"};
+  text-align: left;
+  font-size: 1.5rem;
+  font-weight: bold;
 `;
 
-const UrlText = styled.span`
-  font-size: 16px;
-  color: #333;
-`;
-
-const ActivateButton = styled.button<{ isActive: boolean }>`
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: none;
-  background: ${(props) => (props.isActive ? "#2196f3" : "#666")};
-  color: white;
-  cursor: ${(props) => (props.isActive ? "default" : "pointer")};
-  &:hover {
-    background: ${(props) => (props.isActive ? "#2196f3" : "#555")};
-  }
-`;
-
-const StatusIndicator = styled.div<{ isConnected: boolean }>`
+const StatusIndicator = styled.div<{ $isConnected: boolean }>`
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: ${(props) => (props.isConnected ? "#4CAF50" : "#f44336")};
+  gap: 0.5rem;
+  color: ${(props) => (props.$isConnected ? "#4CAF50" : "#f44336")};
+  white-space: nowrap;
+  font-size: 1rem;
 
   &::before {
     content: "";
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 50%;
-    background: ${(props) => (props.isConnected ? "#4CAF50" : "#f44336")};
+    background: ${(props) => (props.$isConnected ? "#4CAF50" : "#f44336")};
   }
 `;
 
@@ -85,11 +78,9 @@ function ControlPanel() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Socket connection handlers
     socket.on("connect", () => {
       console.log("Connected to server");
       setIsConnected(true);
-      // Request current URL state when connected
       socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
     });
 
@@ -98,7 +89,6 @@ function ControlPanel() {
       setIsConnected(false);
     });
 
-    // Listen for URL changes
     socket.on(SOCKET_EVENTS.CHANGE_URL, (newUrl: string) => {
       console.log("URL changed:", newUrl);
       if (AVAILABLE_URLS.includes(newUrl)) {
@@ -106,7 +96,6 @@ function ControlPanel() {
       }
     });
 
-    // Listen for current URL state
     socket.on(SOCKET_EVENTS.CURRENT_URL_STATE, (newUrl: string) => {
       console.log("Received current URL state:", newUrl);
       if (AVAILABLE_URLS.includes(newUrl)) {
@@ -130,29 +119,23 @@ function ControlPanel() {
   return (
     <Container>
       <Header>
-        <Title>Kiosk Control Panel</Title>
-        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <StatusIndicator isConnected={isConnected}>
-            {isConnected ? "Connected" : "Disconnected"}
-          </StatusIndicator>
-          <KioskLink to="/">View Kiosk</KioskLink>
-        </div>
+        <Title>Remote Control</Title>
+        <StatusIndicator $isConnected={isConnected}>
+          {isConnected ? "Connected" : "Disconnected"}
+        </StatusIndicator>
       </Header>
 
-      <UrlList>
+      <AppSwitcher>
         {AVAILABLE_URLS.map((url) => (
-          <UrlCard key={url} isActive={url === currentUrl}>
-            <UrlText>{url}</UrlText>
-            <ActivateButton
-              isActive={url === currentUrl}
-              onClick={() => url !== currentUrl && handleUrlChange(url)}
-              disabled={url === currentUrl}
-            >
-              {url === currentUrl ? "Active" : "Activate"}
-            </ActivateButton>
-          </UrlCard>
+          <App
+            key={url}
+            $isActive={url === currentUrl}
+            onClick={() => url !== currentUrl && handleUrlChange(url)}
+          >
+            {url.replace("https://", "").split("?")[0]}
+          </App>
         ))}
-      </UrlList>
+      </AppSwitcher>
     </Container>
   );
 }
