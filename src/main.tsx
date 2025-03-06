@@ -2,15 +2,15 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
-import Kiosk from "./Springboard.tsx";
-import ControlPanel from "./ControlPanel.tsx";
+import Display from "./Display";
+import RemoteControl from "./RemoteControl";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Kiosk />} />
-        <Route path="/control" element={<ControlPanel />} />
+        <Route path="/" element={<Display />} />
+        <Route path="/remote-control" element={<RemoteControl />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>
