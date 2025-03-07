@@ -7,16 +7,16 @@ const Display = styled.div`
   width: 100vw;
   position: relative;
   cursor: none !important;
-
-  * {
-    cursor: none !important;
-  }
 `;
 
 const App = styled.iframe`
   width: 100%;
   height: 100%;
   border: none;
+
+  * {
+    cursor: none !important;
+  }
 `;
 
 const StatusIndicator = styled.div<{ isConnected: boolean }>`
