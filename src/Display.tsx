@@ -8,7 +8,7 @@ const Display = styled.div`
   position: relative;
 `;
 
-const CursorHider = styled.div`
+const CursorHider = styled.button`
   position: fixed;
   top: 0;
   left: 0;
@@ -19,7 +19,11 @@ const CursorHider = styled.div`
   cursor: none !important;
   width: 100%;
   height: 100%;
-  background: red;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  outline: none;
 `;
 
 const App = styled.iframe`
@@ -80,7 +84,7 @@ function SpringBoard() {
 
   return (
     <Display>
-      <CursorHider />
+      <CursorHider autoFocus />
       <StatusIndicator isConnected={isConnected} />
       <App
         src={currentUrl}
