@@ -5,7 +5,11 @@ import { socket, AVAILABLE_URLS, SOCKET_EVENTS } from "./socket";
 const Display = styled.div`
   height: 100vh;
   width: 100vw;
-  cursor: none;
+  cursor: none !important;
+
+  * {
+    cursor: none !important;
+  }
 `;
 
 const App = styled.iframe`
