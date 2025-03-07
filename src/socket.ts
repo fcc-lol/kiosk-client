@@ -21,5 +21,7 @@ export const AVAILABLE_URLS = [
   "https://example.com",
   "https://byt.fcc.lol?onDevice=true",
   "https://intake.fcc.lol",
-  "https://coffee.nearby.land"
+  "https://coffee.nearby.land",
+  "https://stoptheft.propel.app",
+  "https://nyc-traffic-cameras.leo.gd"
 ];
