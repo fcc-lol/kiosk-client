@@ -20,19 +20,15 @@ const CursorHider = styled.button`
   right: 0;
   bottom: 0;
   z-index: 9999;
-  pointer-events: none;
   cursor: none !important;
   width: 100%;
   height: 100%;
   padding: 0;
   margin: 0;
   border: none;
-  background: red;
+  background: transparent;
   outline: none;
-
-  * {
-    cursor: none !important;
-  }
+  -webkit-tap-highlight-color: transparent;
 `;
 
 const App = styled.iframe`
@@ -96,9 +92,21 @@ function SpringBoard() {
     };
   }, []);
 
+  useEffect(() => {
+    const preventContextMenu = (e: Event) => e.preventDefault();
+    document.addEventListener("contextmenu", preventContextMenu);
+    return () =>
+      document.removeEventListener("contextmenu", preventContextMenu);
+  }, []);
+
   return (
     <Display>
-      <CursorHider autoFocus />
+      <CursorHider
+        autoFocus
+        onMouseMove={(e) => e.preventDefault()}
+        onClick={(e) => e.preventDefault()}
+        onContextMenu={(e) => e.preventDefault()}
+      />
       <StatusIndicator isConnected={isConnected} />
       <App
         src={currentUrl}
