@@ -3,11 +3,13 @@ import styled from "styled-components";
 import { socket, AVAILABLE_URLS, SOCKET_EVENTS } from "./socket";
 
 const Display = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  cursor: none;
+  width: 100%;
+  height: 100%;
+  cursor: none !important;
+
+  * {
+    cursor: none !important;
+  }
 `;
 
 const App = styled.iframe`
