@@ -82,7 +82,7 @@ function SpringBoard() {
   }, []);
 
   return (
-    <Display>
+    <Display data-display-route="true">
       <StatusIndicator isConnected={isConnected} />
       <App
         src={currentUrl}
