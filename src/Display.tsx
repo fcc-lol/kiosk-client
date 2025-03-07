@@ -6,6 +6,11 @@ const Display = styled.div`
   height: 100vh;
   width: 100vw;
   position: relative;
+  cursor: none !important;
+
+  * {
+    cursor: none !important;
+  }
 `;
 
 const CursorHider = styled.button`
@@ -22,14 +27,23 @@ const CursorHider = styled.button`
   padding: 0;
   margin: 0;
   border: none;
-  background: transparent;
+  background: red;
   outline: none;
+
+  * {
+    cursor: none !important;
+  }
 `;
 
 const App = styled.iframe`
   width: 100%;
   height: 100%;
   border: none;
+  cursor: none !important;
+
+  * {
+    cursor: none !important;
+  }
 `;
 
 const StatusIndicator = styled.div<{ isConnected: boolean }>`
