@@ -3,18 +3,14 @@ import styled from "styled-components";
 import { socket, AVAILABLE_URLS, SOCKET_EVENTS } from "./socket";
 
 const Display = styled.div`
-  width: 100vw;
   height: 100vh;
-  cursor: none !important;
-
-  * {
-    cursor: none !important;
-  }
+  width: 100vw;
+  cursor: none;
 `;
 
 const App = styled.iframe`
-  flex: 1;
   width: 100%;
+  height: 100%;
   border: none;
 `;
 
