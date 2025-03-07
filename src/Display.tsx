@@ -5,6 +5,18 @@ import { socket, AVAILABLE_URLS, SOCKET_EVENTS } from "./socket";
 const Display = styled.div`
   height: 100vh;
   width: 100vw;
+  position: relative;
+`;
+
+const CursorHider = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  pointer-events: none;
+  cursor: none !important;
 `;
 
 const App = styled.iframe`
@@ -65,6 +77,7 @@ function SpringBoard() {
 
   return (
     <Display>
+      <CursorHider />
       <StatusIndicator isConnected={isConnected} />
       <App
         src={currentUrl}
