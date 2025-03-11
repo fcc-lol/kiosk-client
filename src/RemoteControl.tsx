@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import styled, { StyleSheetManager } from "styled-components";
 import isPropValid from "@emotion/is-prop-valid";
-import { socket, SOCKET_EVENTS, fetchAvailableUrls } from "./socket";
+import { socket, SOCKET_EVENTS } from "./socket";
+import { fetchAvailableUrls } from "./api";
 
 const Container = styled.div`
   padding: 20px;
