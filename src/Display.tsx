@@ -11,28 +11,19 @@ const Display = styled.div`
   margin-top: env(safe-area-inset-top);
   margin-bottom: env(safe-area-inset-bottom);
   overflow: hidden;
-  -webkit-overflow-scrolling: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
 `;
 
 const App = styled.iframe`
   width: 100%;
   height: 100%;
   border: none;
-  overflow: hidden;
-  -webkit-overflow-scrolling: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const StatusIndicator = styled.div<{ isConnected: boolean }>`
   position: fixed;
-  top: 8px;
+  top: calc(env(safe-area-inset-top) + 8px);
   right: 8px;
   width: 12px;
   height: 12px;
