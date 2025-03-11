@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { socket, AVAILABLE_URLS, SOCKET_EVENTS } from "./socket";
+import { socket, SOCKET_EVENTS, fetchAvailableUrls } from "./socket";
 
 const Display = styled.div`
   height: 100vh;
@@ -25,12 +25,25 @@ const StatusIndicator = styled.div<{ isConnected: boolean }>`
 `;
 
 function SpringBoard() {
-  const [currentUrl, setCurrentUrl] = useState(AVAILABLE_URLS[0]);
+  const [currentUrl, setCurrentUrl] = useState("");
   const [isConnected, setIsConnected] = useState(false);
+  const [availableUrls, setAvailableUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadUrls = async () => {
+      const urls = await fetchAvailableUrls();
+      if (urls.length > 0) {
+        setAvailableUrls(urls);
+        if (!urls.includes(currentUrl)) {
+          setCurrentUrl(urls[0]);
+        }
+      }
+    };
+    loadUrls();
+  }, [currentUrl]);
 
   useEffect(() => {
     socket.on("connect", () => {
-      console.log("Connected to server");
       setIsConnected(true);
       socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
     });
@@ -42,7 +55,7 @@ function SpringBoard() {
 
     socket.on(SOCKET_EVENTS.CHANGE_URL, (newUrl: string) => {
       console.log("Received URL change request:", newUrl);
-      if (AVAILABLE_URLS.includes(newUrl)) {
+      if (availableUrls.includes(newUrl)) {
         setCurrentUrl(newUrl);
       } else {
         console.warn("Received invalid URL:", newUrl);
@@ -51,7 +64,7 @@ function SpringBoard() {
 
     socket.on(SOCKET_EVENTS.CURRENT_URL_STATE, (newUrl: string) => {
       console.log("Received current URL state:", newUrl);
-      if (AVAILABLE_URLS.includes(newUrl)) {
+      if (availableUrls.includes(newUrl)) {
         setCurrentUrl(newUrl);
       }
     });
@@ -62,7 +75,7 @@ function SpringBoard() {
       socket.off(SOCKET_EVENTS.CHANGE_URL);
       socket.off(SOCKET_EVENTS.CURRENT_URL_STATE);
     };
-  }, []);
+  }, [availableUrls]);
 
   useEffect(() => {
     const preventContextMenu = (e: Event) => e.preventDefault();

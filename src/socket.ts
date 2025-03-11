@@ -16,12 +16,16 @@ export const socket = io(SERVER_URL, {
   reconnectionDelay: 1000
 });
 
-// Export the list of available URLs so it's consistent across components
-export const AVAILABLE_URLS = [
-  "https://example.com",
-  "https://byt.fcc.lol?onDevice=true",
-  "https://intake.fcc.lol",
-  "https://coffee.nearby.land",
-  "https://stoptheft.propel.app",
-  "https://nyc-traffic-cameras.leo.gd"
-];
+// Function to fetch available URLs from the server
+export const fetchAvailableUrls = async (): Promise<string[]> => {
+  try {
+    const response = await fetch(`${SERVER_URL}/urls`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch URLs");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching URLs:", error);
+    return [];
+  }
+};
