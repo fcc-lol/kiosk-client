@@ -118,7 +118,6 @@ function RemoteControl() {
     });
 
     socket.on("disconnect", () => {
-      console.log("Disconnected from server");
       setIsConnected(false);
     });
 

@@ -65,7 +65,6 @@ function SpringBoard() {
     });
 
     socket.on("disconnect", () => {
-      console.log("Disconnected from server");
       setIsConnected(false);
     });
 
