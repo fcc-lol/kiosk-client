@@ -30,21 +30,35 @@ function SpringBoard() {
   const [currentUrl, setCurrentUrl] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [availableUrls, setAvailableUrls] = useState<string[]>([]);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadUrls = async () => {
+    const initialize = async () => {
+      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
+
       const urls = await fetchAvailableUrls();
       if (urls.length > 0) {
         setAvailableUrls(urls);
-        if (!urls.includes(currentUrl)) {
-          setCurrentUrl(urls[0]);
+        if (pendingUrl && urls.includes(pendingUrl)) {
+          setCurrentUrl(pendingUrl);
+          setPendingUrl(null);
         }
       }
     };
-    loadUrls();
-  }, [currentUrl]);
+    initialize();
+  }, [pendingUrl]);
 
   useEffect(() => {
+    const handleCurrentUrlState = (newUrl: string) => {
+      if (availableUrls.length === 0) {
+        setPendingUrl(newUrl);
+      } else if (availableUrls.includes(newUrl)) {
+        setCurrentUrl(newUrl);
+      } else {
+        console.warn("Received invalid URL:", newUrl);
+      }
+    };
+
     socket.on("connect", () => {
       setIsConnected(true);
       socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
@@ -56,7 +70,6 @@ function SpringBoard() {
     });
 
     socket.on(SOCKET_EVENTS.CHANGE_URL, (newUrl: string) => {
-      console.log("Received URL change request:", newUrl);
       if (availableUrls.includes(newUrl)) {
         setCurrentUrl(newUrl);
       } else {
@@ -64,12 +77,7 @@ function SpringBoard() {
       }
     });
 
-    socket.on(SOCKET_EVENTS.CURRENT_URL_STATE, (newUrl: string) => {
-      console.log("Received current URL state:", newUrl);
-      if (availableUrls.includes(newUrl)) {
-        setCurrentUrl(newUrl);
-      }
-    });
+    socket.on(SOCKET_EVENTS.CURRENT_URL_STATE, handleCurrentUrlState);
 
     return () => {
       socket.off("connect");

@@ -3,7 +3,8 @@ import { io } from "socket.io-client";
 export const SOCKET_EVENTS = {
   CHANGE_URL: "changeUrl",
   REQUEST_CURRENT_URL: "requestCurrentUrl",
-  CURRENT_URL_STATE: "currentUrlState"
+  CURRENT_URL_STATE: "currentUrlState",
+  ERROR: "error"
 } as const;
 
 export const SERVER_URL =
