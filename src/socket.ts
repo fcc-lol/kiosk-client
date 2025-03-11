@@ -19,7 +19,14 @@ export const socket = io(SERVER_URL, {
 // Function to fetch available URLs from the server
 export const fetchAvailableUrls = async (): Promise<string[]> => {
   try {
-    const response = await fetch(`${SERVER_URL}/urls`);
+    const apiKey = new URLSearchParams(window.location.search).get(
+      "fcc-api-key"
+    );
+    const url = new URL(`${SERVER_URL}/urls`);
+    if (apiKey) {
+      url.searchParams.set("fcc-api-key", apiKey);
+    }
+    const response = await fetch(url.toString());
     if (!response.ok) {
       throw new Error("Failed to fetch URLs");
     }
