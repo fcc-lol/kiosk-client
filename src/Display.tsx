@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import styled, { StyleSheetManager } from "styled-components";
 import isPropValid from "@emotion/is-prop-valid";
 import { socket, SOCKET_EVENTS } from "./socket";
-import { fetchAvailableUrls } from "./api";
+import { fetchAvailableUrls, UrlItem } from "./api";
 
 const Display = styled.div`
   height: 100vh;
@@ -29,7 +29,7 @@ const StatusIndicator = styled.div<{ isConnected: boolean }>`
 function SpringBoard() {
   const [currentUrl, setCurrentUrl] = useState("");
   const [isConnected, setIsConnected] = useState(false);
-  const [availableUrls, setAvailableUrls] = useState<string[]>([]);
+  const [availableUrls, setAvailableUrls] = useState<UrlItem[]>([]);
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ function SpringBoard() {
       const urls = await fetchAvailableUrls();
       if (urls.length > 0) {
         setAvailableUrls(urls);
-        if (pendingUrl && urls.includes(pendingUrl)) {
+        if (pendingUrl && urls.some((item) => item.url === pendingUrl)) {
           setCurrentUrl(pendingUrl);
           setPendingUrl(null);
         }
@@ -52,7 +52,7 @@ function SpringBoard() {
     const handleCurrentUrlState = (newUrl: string) => {
       if (availableUrls.length === 0) {
         setPendingUrl(newUrl);
-      } else if (availableUrls.includes(newUrl)) {
+      } else if (availableUrls.some((item) => item.url === newUrl)) {
         setCurrentUrl(newUrl);
       } else {
         console.warn("Received invalid URL:", newUrl);
@@ -69,7 +69,7 @@ function SpringBoard() {
     });
 
     socket.on(SOCKET_EVENTS.CHANGE_URL, (newUrl: string) => {
-      if (availableUrls.includes(newUrl)) {
+      if (availableUrls.some((item) => item.url === newUrl)) {
         setCurrentUrl(newUrl);
       } else {
         console.warn("Received invalid URL:", newUrl);
