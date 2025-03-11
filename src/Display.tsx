@@ -19,6 +19,12 @@ const App = styled.iframe`
   border: none;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
 `;
 
 const StatusIndicator = styled.div<{ isConnected: boolean }>`
