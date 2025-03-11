@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import styled, { StyleSheetManager } from "styled-components";
 import isPropValid from "@emotion/is-prop-valid";
 import { socket, SOCKET_EVENTS } from "./socket";
-import { fetchAvailableUrls } from "./api";
+import { fetchAvailableUrls, UrlItem } from "./api";
 
 const Container = styled.div`
   padding: 20px;
@@ -84,7 +84,7 @@ const StatusIndicator = styled.div<{ $isConnected: boolean }>`
 function RemoteControl() {
   const [currentUrl, setCurrentUrl] = useState("");
   const [isConnected, setIsConnected] = useState(false);
-  const [availableUrls, setAvailableUrls] = useState<string[]>([]);
+  const [availableUrls, setAvailableUrls] = useState<UrlItem[]>([]);
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -94,7 +94,7 @@ function RemoteControl() {
       const urls = await fetchAvailableUrls();
       if (urls.length > 0) {
         setAvailableUrls(urls);
-        if (pendingUrl && urls.includes(pendingUrl)) {
+        if (pendingUrl && urls.some((item) => item.url === pendingUrl)) {
           setCurrentUrl(pendingUrl);
           setPendingUrl(null);
         }
@@ -107,7 +107,7 @@ function RemoteControl() {
     const handleCurrentUrlState = (newUrl: string) => {
       if (availableUrls.length === 0) {
         setPendingUrl(newUrl);
-      } else if (availableUrls.includes(newUrl)) {
+      } else if (availableUrls.some((item) => item.url === newUrl)) {
         setCurrentUrl(newUrl);
       }
     };
@@ -148,13 +148,13 @@ function RemoteControl() {
         </Header>
 
         <AppSwitcher>
-          {availableUrls.map((url) => (
+          {availableUrls.map((item) => (
             <App
-              key={url}
-              $isActive={url === currentUrl}
-              onClick={() => handleUrlChange(url)}
+              key={item._id}
+              $isActive={item.url === currentUrl}
+              onClick={() => handleUrlChange(item.url)}
             >
-              {url.replace("https://", "").split("?")[0]}
+              {item.title}
             </App>
           ))}
         </AppSwitcher>

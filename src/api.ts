@@ -1,6 +1,12 @@
 const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
 
-export const fetchAvailableUrls = async (): Promise<string[]> => {
+export type UrlItem = {
+  _id: string;
+  title: string;
+  url: string;
+};
+
+export const fetchAvailableUrls = async (): Promise<UrlItem[]> => {
   try {
     const apiKey = new URLSearchParams(window.location.search).get(
       "fcc-api-key"
