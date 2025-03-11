@@ -9,7 +9,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  cursor: none !important;
 }
 
 body {
@@ -18,10 +17,4 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  cursor: none !important;
-}
-
-/* Hide cursor globally for the Display route */
-[data-display-route="true"] * {
-  cursor: none !important;
 }
