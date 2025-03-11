@@ -1,11 +1,11 @@
-import { SERVER_URL } from "./socket";
+const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
 
 export const fetchAvailableUrls = async (): Promise<string[]> => {
   try {
     const apiKey = new URLSearchParams(window.location.search).get(
       "fcc-api-key"
     );
-    const url = new URL(`${SERVER_URL}/urls`);
+    const url = new URL(`${API_SERVER_URL}/urls`);
     if (apiKey) {
       url.searchParams.set("fcc-api-key", apiKey);
     }
