@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import styled from "styled-components";
+import styled, { StyleSheetManager } from "styled-components";
+import isPropValid from "@emotion/is-prop-valid";
 import { socket, SOCKET_EVENTS, fetchAvailableUrls } from "./socket";
 
 const Display = styled.div`
@@ -85,14 +86,18 @@ function SpringBoard() {
   }, []);
 
   return (
-    <Display data-display-route="true">
-      <StatusIndicator isConnected={isConnected} />
-      <App
-        src={currentUrl}
-        title="Current URL"
-        sandbox="allow-same-origin allow-scripts"
-      />
-    </Display>
+    <StyleSheetManager shouldForwardProp={isPropValid}>
+      <Display data-display-route="true">
+        <StatusIndicator isConnected={isConnected} />
+        {currentUrl && (
+          <App
+            src={currentUrl}
+            title="Current URL"
+            sandbox="allow-same-origin allow-scripts"
+          />
+        )}
+      </Display>
+    </StyleSheetManager>
   );
 }
 

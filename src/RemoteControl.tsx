@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import styled from "styled-components";
+import styled, { StyleSheetManager } from "styled-components";
+import isPropValid from "@emotion/is-prop-valid";
 import { socket, SOCKET_EVENTS, fetchAvailableUrls } from "./socket";
 
 const Container = styled.div`
@@ -136,26 +137,28 @@ function ControlPanel() {
   };
 
   return (
-    <Container>
-      <Header>
-        <Title>Remote Control</Title>
-        <StatusIndicator $isConnected={isConnected}>
-          {isConnected ? "Connected" : "Disconnected"}
-        </StatusIndicator>
-      </Header>
+    <StyleSheetManager shouldForwardProp={isPropValid}>
+      <Container>
+        <Header>
+          <Title>Remote Control</Title>
+          <StatusIndicator $isConnected={isConnected}>
+            {isConnected ? "Connected" : "Disconnected"}
+          </StatusIndicator>
+        </Header>
 
-      <AppSwitcher>
-        {availableUrls.map((url) => (
-          <App
-            key={url}
-            $isActive={url === currentUrl}
-            onClick={() => url !== currentUrl && handleUrlChange(url)}
-          >
-            {url.replace("https://", "").split("?")[0]}
-          </App>
-        ))}
-      </AppSwitcher>
-    </Container>
+        <AppSwitcher>
+          {availableUrls.map((url) => (
+            <App
+              key={url}
+              $isActive={url === currentUrl}
+              onClick={() => url !== currentUrl && handleUrlChange(url)}
+            >
+              {url.replace("https://", "").split("?")[0]}
+            </App>
+          ))}
+        </AppSwitcher>
+      </Container>
+    </StyleSheetManager>
   );
 }
 
