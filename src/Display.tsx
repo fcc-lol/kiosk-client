@@ -5,15 +5,29 @@ import { socket, SOCKET_EVENTS } from "./socket";
 import { fetchAvailableUrls, UrlItem } from "./api";
 
 const Display = styled.div`
-  height: 100vh;
+  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   width: 100vw;
   position: relative;
+  margin-top: env(safe-area-inset-top);
+  margin-bottom: env(safe-area-inset-bottom);
+  overflow: hidden;
+  -webkit-overflow-scrolling: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const App = styled.iframe`
   width: 100%;
   height: 100%;
   border: none;
+  overflow: hidden;
+  -webkit-overflow-scrolling: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const StatusIndicator = styled.div<{ isConnected: boolean }>`
