@@ -10,11 +10,16 @@ const Container = styled.div`
   width: 100%;
   box-sizing: border-box;
   max-width: 100%;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 
   @media (max-width: 768px) {
     padding: 16px;
@@ -32,6 +37,8 @@ const Header = styled.div`
   background: #000;
   z-index: 1;
   padding: 10px 0;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const Title = styled.h1`
