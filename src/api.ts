@@ -8,12 +8,10 @@ export type UrlItem = {
 
 export const fetchAvailableUrls = async (): Promise<UrlItem[]> => {
   try {
-    const apiKey = new URLSearchParams(window.location.search).get(
-      "fcc-api-key"
-    );
+    const apiKey = new URLSearchParams(window.location.search).get("fccApiKey");
     const url = new URL(`${API_SERVER_URL}/urls`);
     if (apiKey) {
-      url.searchParams.set("fcc-api-key", apiKey);
+      url.searchParams.set("fccApiKey", apiKey);
     }
     const response = await fetch(url.toString());
     if (!response.ok) {
