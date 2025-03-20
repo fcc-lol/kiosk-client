@@ -5,7 +5,7 @@ import { socket, SOCKET_EVENTS } from "./socket";
 import { fetchAvailableUrls, UrlItem } from "./api";
 
 const Container = styled.div`
-  padding: 20px;
+  padding: 1rem 1rem 1.5rem 1rem;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -20,10 +20,6 @@ const Container = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
 `;
 
 const Header = styled.div`
@@ -32,11 +28,6 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  position: sticky;
-  top: 0;
-  background: #000;
-  z-index: 1;
-  padding: 10px 0;
   width: 100%;
   box-sizing: border-box;
 `;
