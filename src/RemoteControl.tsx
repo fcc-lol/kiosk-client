@@ -10,8 +10,9 @@ const Container = styled.div`
   width: 100%;
   box-sizing: border-box;
   max-width: 100%;
-  height: 100%;
-  overflow: hidden;
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
 
@@ -26,6 +27,11 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  background: #000;
+  z-index: 1;
+  padding: 10px 0;
 `;
 
 const Title = styled.h1`
@@ -42,8 +48,6 @@ const AppSwitcher = styled.div`
   flex-direction: column;
   gap: 1rem;
   width: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 `;
 
 const App = styled.div<{ $isActive: boolean }>`
