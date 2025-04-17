@@ -1,18 +1,19 @@
-import React from "react";
-import styled from "styled-components";
+import { StrictMode } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Display from "./Display";
+import RemoteControl from "./RemoteControl";
 
-const Page = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 24px;
-  color: #333;
-`;
-
-function App() {
-  return <Page>Hello world!</Page>;
-}
+const App = () => {
+  return (
+    <StrictMode>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Display />} />
+          <Route path="/remote-control" element={<RemoteControl />} />
+        </Routes>
+      </BrowserRouter>
+    </StrictMode>
+  );
+};
 
 export default App;
-
