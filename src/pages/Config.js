@@ -320,11 +320,17 @@ const Config = () => {
     setError(null);
 
     try {
+      setSaveStatus("saving");
       await addUrl(formData);
       setFormData({ id: "", title: "", url: "" });
       // Refresh the URLs list
       const data = await fetchAvailableUrls();
       setUrls(data);
+      setSaveStatus("saved");
+      // Wait for the fade-out animation to complete before removing the status
+      setTimeout(() => {
+        setSaveStatus(null);
+      }, 2200);
       // Focus the ID input and scroll to form row
       if (newIdInputRef.current) {
         newIdInputRef.current.focus();
@@ -337,6 +343,11 @@ const Config = () => {
       }, 100);
     } catch (err) {
       setError(err.message);
+      setSaveStatus("error");
+      // Wait for the fade-out animation to complete before removing the status
+      setTimeout(() => {
+        setSaveStatus(null);
+      }, 2200);
     }
   };
 
