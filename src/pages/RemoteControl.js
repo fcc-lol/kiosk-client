@@ -1,25 +1,10 @@
 import { useState, useEffect } from "react";
-import styled, { StyleSheetManager } from "styled-components";
-import isPropValid from "@emotion/is-prop-valid";
-import { socket, SOCKET_EVENTS } from "./socket";
-import { fetchAvailableUrls } from "./api";
+import styled from "styled-components";
+import { socket, SOCKET_EVENTS } from "../socket";
+import { fetchAvailableUrls } from "../api";
 
 const Container = styled.div`
   padding: 1rem 1rem 1.5rem 1rem;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-  max-width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 `;
 
 const Header = styled.div`
@@ -140,28 +125,26 @@ function RemoteControl() {
   };
 
   return (
-    <StyleSheetManager shouldForwardProp={isPropValid}>
-      <Container>
-        <Header>
-          <Title>Remote Control</Title>
-          <StatusIndicator $isConnected={isConnected}>
-            {isConnected ? "Connected" : "Disconnected"}
-          </StatusIndicator>
-        </Header>
+    <Container>
+      <Header>
+        <Title>Remote Control</Title>
+        <StatusIndicator $isConnected={isConnected}>
+          {isConnected ? "Connected" : "Disconnected"}
+        </StatusIndicator>
+      </Header>
 
-        <AppSwitcher>
-          {availableUrls.map((item) => (
-            <App
-              key={item.id}
-              isActive={item.id === currentId}
-              onClick={() => handleUrlChange(item.id)}
-            >
-              {item.title}
-            </App>
-          ))}
-        </AppSwitcher>
-      </Container>
-    </StyleSheetManager>
+      <AppSwitcher>
+        {availableUrls.map((item) => (
+          <App
+            key={item.id}
+            isActive={item.id === currentId}
+            onClick={() => handleUrlChange(item.id)}
+          >
+            {item.title}
+          </App>
+        ))}
+      </AppSwitcher>
+    </Container>
   );
 }
 

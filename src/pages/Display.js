@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import styled, { StyleSheetManager } from "styled-components";
-import isPropValid from "@emotion/is-prop-valid";
-import { socket, SOCKET_EVENTS } from "./socket";
-import { fetchAvailableUrls } from "./api";
+import styled from "styled-components";
+import { socket, SOCKET_EVENTS } from "../socket";
+import { fetchAvailableUrls } from "../api";
 
 const Display = styled.div`
   height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
@@ -101,18 +100,16 @@ function SpringBoard() {
   const currentUrl = availableUrls.find((item) => item.id === currentId)?.url;
 
   return (
-    <StyleSheetManager shouldForwardProp={isPropValid}>
-      <Display data-display-route="true">
-        <StatusIndicator isConnected={isConnected} />
-        {currentUrl && (
-          <App
-            src={currentUrl}
-            title="Current URL"
-            sandbox="allow-same-origin allow-scripts"
-          />
-        )}
-      </Display>
-    </StyleSheetManager>
+    <Display data-display-route="true">
+      <StatusIndicator isConnected={isConnected} />
+      {currentUrl && (
+        <App
+          src={currentUrl}
+          title="Current URL"
+          sandbox="allow-same-origin allow-scripts"
+        />
+      )}
+    </Display>
   );
 }
 

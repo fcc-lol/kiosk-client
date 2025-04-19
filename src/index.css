@@ -3,8 +3,6 @@
   line-height: 1.5;
   font-weight: 400;
 
-  background-color: #000;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -13,21 +11,23 @@
 
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  overflow: hidden;
+  background-color: black;
 }
 
 #root {
-  height: 100vh;
+  min-height: 100vh;
+  min-width: 100vw;
+}
+
+.display-page {
   overflow: hidden;
 }
 
-* {
+.display-page * {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-*::-webkit-scrollbar {
+.display-page *::-webkit-scrollbar {
   display: none;
 }

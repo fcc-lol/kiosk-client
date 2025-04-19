@@ -1,17 +1,23 @@
 import { StrictMode } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Display from "./Display";
-import RemoteControl from "./RemoteControl";
+import { StyleSheetManager } from "styled-components";
+import isPropValid from "@emotion/is-prop-valid";
+import Display from "./pages/Display";
+import RemoteControl from "./pages/RemoteControl";
+import Config from "./pages/Config";
 
 const App = () => {
   return (
     <StrictMode>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Display />} />
-          <Route path="/remote-control" element={<RemoteControl />} />
-        </Routes>
-      </BrowserRouter>
+      <StyleSheetManager shouldForwardProp={isPropValid}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Display />} />
+            <Route path="/remote-control" element={<RemoteControl />} />
+            <Route path="/config" element={<Config />} />
+          </Routes>
+        </BrowserRouter>
+      </StyleSheetManager>
     </StrictMode>
   );
 };
