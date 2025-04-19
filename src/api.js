@@ -141,3 +141,27 @@ export const getCurrentUrl = async () => {
     throw error;
   }
 };
+
+export const updateUrlOrder = async (orderedIds) => {
+  try {
+    const apiKey = getApiKeyFromUrl();
+    if (!apiKey) {
+      throw new Error("API key is required");
+    }
+    const response = await fetch(`${API_BASE_URL}/update-order`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        orderedIds,
+        fccApiKey: apiKey
+      })
+    });
+    await handleError(response);
+    return response.json();
+  } catch (error) {
+    console.error("Error updating URL order:", error);
+    throw error;
+  }
+};

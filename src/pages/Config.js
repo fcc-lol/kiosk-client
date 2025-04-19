@@ -5,16 +5,34 @@ import {
   fetchAvailableUrls,
   editUrl,
   changeUrl,
-  getCurrentUrl
+  getCurrentUrl,
+  updateUrlOrder
 } from "../api";
 import styled from "styled-components";
 import "@fortawesome/fontawesome-free/css/all.css";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import React from "react";
 
 const Container = styled.div`
   margin: 0 auto;
   min-height: 100vh;
   color: #ffffff;
-  background-color: #2d2d2d;
+  background-color: #1f1f1f;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 `;
@@ -27,7 +45,7 @@ const Input = styled.input`
   font-size: 1.125rem;
   line-height: 1.5;
   font-family: inherit;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem 0.5rem 0;
   height: 100%;
 
   &:focus {
@@ -54,15 +72,16 @@ const Button = styled.button`
   &:hover {
     color: rgba(255, 255, 255, 1);
   }
+`;
 
-  &.active {
-    color: #4caf50;
-  }
+const CheckButton = styled(Button)`
+  margin-left: auto;
 
-  &.check-button {
-    margin-left: auto;
-    margin-right: 1rem;
-  }
+  ${({ hidden }) =>
+    hidden &&
+    `
+      visibility: hidden;
+    `}
 `;
 
 const Table = styled.table`
@@ -74,24 +93,52 @@ const Table = styled.table`
 `;
 
 const TableHeader = styled.th`
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem 0.5rem 0;
   text-align: left;
   font-weight: bold;
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.875rem;
   text-transform: uppercase;
+  user-select: none;
 
   &:nth-child(1) {
-    width: 10%;
+    width: 2rem;
   }
   &:nth-child(2) {
-    width: 20%;
+    width: 15%;
   }
   &:nth-child(3) {
-    width: 40%;
+    width: 20%;
   }
   &:nth-child(4) {
-    width: 100px;
+    width: 50%;
+  }
+  &:nth-child(5) {
+    width: 8rem;
+  }
+`;
+
+const StatusMessage = styled.span`
+  padding-left: 1rem;
+  color: rgba(255, 255, 255, 0.25);
+`;
+
+const TableRow = styled.tr`
+  background-color: transparent;
+
+  &:hover {
+    background-color: #2d2d2d;
+  }
+`;
+
+const SortableTableRow = styled.tr`
+  background-color: transparent;
+  opacity: ${(props) => (props.isDragging ? 0.5 : 1)};
+  transform: ${(props) => CSS.Transform.toString(props.transform)};
+  transition: ${(props) => props.transition};
+
+  &:hover {
+    background-color: #2d2d2d;
   }
 `;
 
@@ -107,23 +154,14 @@ const TableCell = styled.td`
   overflow: hidden;
   position: relative;
 
-  &:not(:last-child)::after {
+  &:not(:first-child):not(:last-child)::after {
     content: "";
     position: absolute;
     top: 0;
     right: 0;
     width: 1rem;
     height: 100%;
-    background: linear-gradient(
-      to right,
-      transparent,
-      ${(props) =>
-        props.isLastRow
-          ? "transparent"
-          : props.isOdd
-          ? "rgb(54, 54, 54)"
-          : "#2d2d2d"}
-    );
+    background: linear-gradient(to right, transparent, #1f1f1f);
     pointer-events: none;
   }
 
@@ -134,18 +172,12 @@ const TableCell = styled.td`
     padding-right: 1rem;
     overflow: visible;
   }
-`;
 
-const HiddenButton = styled(Button)`
-  visibility: hidden;
-`;
-
-const TableRow = styled.tr`
-  &:nth-child(odd) {
-    background-color: rgb(54, 54, 54);
-  }
-  &:nth-child(even) {
-    background-color: transparent;
+  ${TableRow}:hover &,
+  ${SortableTableRow}:hover & {
+    &:not(:first-child):not(:last-child)::after {
+      background: linear-gradient(to right, transparent, #2d2d2d);
+    }
   }
 `;
 
@@ -157,6 +189,64 @@ const Buttons = styled.div`
   width: fit-content;
   margin-left: auto;
   min-width: max-content;
+`;
+
+const DragHandle = styled.div`
+  cursor: grab;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 1);
+  }
+
+  ${({ isDragging }) =>
+    isDragging &&
+    `
+    cursor: grabbing;
+  `}
+`;
+
+const SortableItem = ({ id, children, ...props }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
+
+  return (
+    <SortableTableRow
+      ref={setNodeRef}
+      transform={transform}
+      transition={transition}
+      isDragging={isDragging}
+      {...attributes}
+      {...props}
+    >
+      <TableCell>
+        <DragHandle {...listeners} isDragging={isDragging}>
+          <i className="fas fa-grip-vertical"></i>
+        </DragHandle>
+      </TableCell>
+      {children}
+    </SortableTableRow>
+  );
+};
+
+const SaveStatus = styled.span`
+  color: rgba(255, 255, 255, 1);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  transition: opacity 0.2s ease;
+  opacity: ${(props) => (props.status ? 1 : 0)};
 `;
 
 const Config = () => {
@@ -173,18 +263,17 @@ const Config = () => {
   const [, setActiveInput] = useState(null);
   const [focusedInput, setFocusedInput] = useState(null);
   const [currentUrlId, setCurrentUrlId] = useState(null);
+  const [saveStatus, setSaveStatus] = useState(null);
   const inputRefs = useRef({});
   const newIdInputRef = useRef(null);
+  const [items, setItems] = useState([]);
 
-  useEffect(() => {
-    // Set background color when component mounts
-    document.documentElement.style.backgroundColor = "#2d2d2d";
-
-    // Cleanup function to reset background color when component unmounts
-    return () => {
-      document.documentElement.style.backgroundColor = "#000";
-    };
-  }, []);
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates
+    })
+  );
 
   useEffect(() => {
     const fetchUrls = async () => {
@@ -216,6 +305,12 @@ const Config = () => {
         return acc;
       }, {});
       setEditData(initialEditData);
+    }
+  }, [urls]);
+
+  useEffect(() => {
+    if (urls.length > 0) {
+      setItems(urls.map((url) => url.id));
     }
   }, [urls]);
 
@@ -322,6 +417,7 @@ const Config = () => {
       const timer = setTimeout(async () => {
         try {
           setError(null);
+          setSaveStatus("saving");
           // Ensure we have at least one field to update
           const updateData = {
             oldId: id,
@@ -335,9 +431,19 @@ const Config = () => {
             // Refresh the URLs list after successful edit
             const data = await fetchAvailableUrls();
             setUrls(data);
+            setSaveStatus("saved");
+            // Wait for the fade-out animation to complete before removing the status
+            setTimeout(() => {
+              setSaveStatus(null);
+            }, 2200);
           }
         } catch (err) {
           setError(err.message);
+          setSaveStatus("error");
+          // Wait for the fade-out animation to complete before removing the status
+          setTimeout(() => {
+            setSaveStatus(null);
+          }, 2200);
           // Revert the edit if it failed
           const data = await fetchAvailableUrls();
           setUrls(data);
@@ -381,13 +487,47 @@ const Config = () => {
     }
   };
 
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+
+      // Update the order in the backend
+      try {
+        const newUrls = arrayMove(
+          urls,
+          urls.findIndex((u) => u.id === active.id),
+          urls.findIndex((u) => u.id === over.id)
+        );
+        setUrls(newUrls);
+
+        // Save the new order to the server
+        await updateUrlOrder(newUrls.map((u) => u.id));
+      } catch (err) {
+        setError(err.message);
+        // Revert the order if the update fails
+        const data = await fetchAvailableUrls();
+        setUrls(data);
+        setItems(data.map((url) => url.id));
+      }
+    }
+  };
+
   return (
     <Container>
       {error && (
         <Table>
           <thead>
             <tr>
-              <TableHeader>{error}</TableHeader>
+              <TableHeader>
+                <StatusMessage>{error}</StatusMessage>
+              </TableHeader>
             </tr>
           </thead>
         </Table>
@@ -396,7 +536,9 @@ const Config = () => {
         <Table>
           <thead>
             <tr>
-              <TableHeader>Loading...</TableHeader>
+              <TableHeader>
+                <StatusMessage>Loading...</StatusMessage>
+              </TableHeader>
             </tr>
           </thead>
         </Table>
@@ -406,79 +548,201 @@ const Config = () => {
             <Table>
               <thead>
                 <tr>
-                  <TableHeader>No URLs configured yet</TableHeader>
+                  <TableHeader>
+                    <StatusMessage>No URLs configured yet</StatusMessage>
+                  </TableHeader>
                 </tr>
               </thead>
             </Table>
           ) : (
             !error && (
-              <Table>
-                <thead>
-                  <tr>
-                    <TableHeader>ID</TableHeader>
-                    <TableHeader>Title</TableHeader>
-                    <TableHeader>URL</TableHeader>
-                  </tr>
-                </thead>
-                <tbody>
-                  {urls.map((url, index) => (
-                    <TableRow key={url.id}>
-                      <TableCell
-                        isOdd={index % 2 === 0}
-                        isLastRow={index === urls.length - 1}
-                      >
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <Table>
+                  <thead>
+                    <tr>
+                      <TableHeader></TableHeader>
+                      <TableHeader>ID</TableHeader>
+                      <TableHeader>Title</TableHeader>
+                      <TableHeader>URL</TableHeader>
+                      <TableHeader>
+                        <SaveStatus status={saveStatus}>
+                          {saveStatus === "saving"
+                            ? "Saving..."
+                            : saveStatus === "saved"
+                            ? "Saved"
+                            : saveStatus === "error"
+                            ? "Error"
+                            : "Saved"}
+                        </SaveStatus>
+                      </TableHeader>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <SortableContext
+                      items={items}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {urls.map((url, index) => (
+                        <SortableItem key={url.id} id={url.id}>
+                          <TableCell
+                            isOdd={index % 2 === 0}
+                            isLastRow={index === urls.length - 1}
+                          >
+                            <Input
+                              ref={(el) =>
+                                (inputRefs.current[`${url.id}-id`] = el)
+                              }
+                              type="text"
+                              name="id"
+                              data-id={url.id}
+                              value={editData[url.id]?.id || url.id}
+                              onChange={(e) => handleEditInputChange(e, url.id)}
+                              onFocus={() => handleInputFocus(url.id, "id")}
+                              onBlur={(e) => handleInputBlur(e, url.id, "id")}
+                              disabled={false}
+                              autocomplete="off"
+                              data-1p-ignore
+                              data-form-type="other"
+                              data-lpignore="true"
+                            />
+                          </TableCell>
+                          <TableCell
+                            isOdd={index % 2 === 0}
+                            isLastRow={index === urls.length - 1}
+                          >
+                            <Input
+                              ref={(el) =>
+                                (inputRefs.current[`${url.id}-title`] = el)
+                              }
+                              type="text"
+                              name="title"
+                              data-id={url.id}
+                              value={editData[url.id]?.title || url.title}
+                              onChange={(e) => handleEditInputChange(e, url.id)}
+                              onFocus={() => handleInputFocus(url.id, "title")}
+                              onBlur={(e) =>
+                                handleInputBlur(e, url.id, "title")
+                              }
+                              autocomplete="off"
+                              data-1p-ignore
+                              data-form-type="other"
+                              data-lpignore="true"
+                            />
+                          </TableCell>
+                          <TableCell
+                            isOdd={index % 2 === 0}
+                            isLastRow={index === urls.length - 1}
+                          >
+                            <Input
+                              ref={(el) =>
+                                (inputRefs.current[`${url.id}-url`] = el)
+                              }
+                              type="url"
+                              name="url"
+                              data-id={url.id}
+                              value={editData[url.id]?.url || url.url}
+                              onChange={(e) => handleEditInputChange(e, url.id)}
+                              onFocus={() => handleInputFocus(url.id, "url")}
+                              onBlur={(e) => handleInputBlur(e, url.id, "url")}
+                              autocomplete="off"
+                              data-1p-ignore
+                              data-form-type="other"
+                              data-lpignore="true"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Buttons>
+                              {currentUrlId !== url.id && (
+                                <Button
+                                  onClick={() => handleSwitchUrl(url.id)}
+                                  title="Switch to this URL"
+                                >
+                                  <i className="fas fa-play"></i>
+                                </Button>
+                              )}
+                              <Button
+                                onClick={() =>
+                                  window.open(
+                                    editData[url.id]?.url || url.url,
+                                    "_blank"
+                                  )
+                                }
+                                title="Open in new tab"
+                              >
+                                <i className="fas fa-external-link-alt"></i>
+                              </Button>
+                              <Button
+                                onClick={() => handleRemoveUrl(url.id)}
+                                title="Delete URL"
+                              >
+                                <i className="fas fa-trash"></i>
+                              </Button>
+                            </Buttons>
+                          </TableCell>
+                        </SortableItem>
+                      ))}
+                    </SortableContext>
+                    <TableRow>
+                      <TableCell></TableCell>
+                      <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
                         <Input
-                          ref={(el) => (inputRefs.current[`${url.id}-id`] = el)}
+                          ref={newIdInputRef}
                           type="text"
                           name="id"
-                          data-id={url.id}
-                          value={editData[url.id]?.id || url.id}
-                          onChange={(e) => handleEditInputChange(e, url.id)}
-                          onFocus={() => handleInputFocus(url.id, "id")}
-                          onBlur={(e) => handleInputBlur(e, url.id, "id")}
-                          disabled={false}
+                          value={formData.id}
+                          onChange={handleInputChange}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && hasFormContent) {
+                              e.preventDefault();
+                              handleAddUrl(e);
+                            }
+                          }}
+                          placeholder="Identifier"
+                          required
                           autocomplete="off"
                           data-1p-ignore
                           data-form-type="other"
                           data-lpignore="true"
                         />
                       </TableCell>
-                      <TableCell
-                        isOdd={index % 2 === 0}
-                        isLastRow={index === urls.length - 1}
-                      >
+                      <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
                         <Input
-                          ref={(el) =>
-                            (inputRefs.current[`${url.id}-title`] = el)
-                          }
                           type="text"
                           name="title"
-                          data-id={url.id}
-                          value={editData[url.id]?.title || url.title}
-                          onChange={(e) => handleEditInputChange(e, url.id)}
-                          onFocus={() => handleInputFocus(url.id, "title")}
-                          onBlur={(e) => handleInputBlur(e, url.id, "title")}
+                          value={formData.title}
+                          onChange={handleInputChange}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && hasFormContent) {
+                              e.preventDefault();
+                              handleAddUrl(e);
+                            }
+                          }}
+                          placeholder="Title"
+                          required
                           autocomplete="off"
                           data-1p-ignore
                           data-form-type="other"
                           data-lpignore="true"
                         />
                       </TableCell>
-                      <TableCell
-                        isOdd={index % 2 === 0}
-                        isLastRow={index === urls.length - 1}
-                      >
+                      <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
                         <Input
-                          ref={(el) =>
-                            (inputRefs.current[`${url.id}-url`] = el)
-                          }
                           type="url"
                           name="url"
-                          data-id={url.id}
-                          value={editData[url.id]?.url || url.url}
-                          onChange={(e) => handleEditInputChange(e, url.id)}
-                          onFocus={() => handleInputFocus(url.id, "url")}
-                          onBlur={(e) => handleInputBlur(e, url.id, "url")}
+                          value={formData.url}
+                          onChange={handleInputChange}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && hasFormContent) {
+                              e.preventDefault();
+                              handleAddUrl(e);
+                            }
+                          }}
+                          placeholder="URL"
+                          required
                           autocomplete="off"
                           data-1p-ignore
                           data-form-type="other"
@@ -486,112 +750,17 @@ const Config = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Buttons>
-                          {currentUrlId !== url.id && (
-                            <Button
-                              onClick={() => handleSwitchUrl(url.id)}
-                              title="Switch to this URL"
-                            >
-                              <i className="fas fa-play"></i>
-                            </Button>
-                          )}
-                          <Button
-                            onClick={() =>
-                              window.open(
-                                editData[url.id]?.url || url.url,
-                                "_blank"
-                              )
-                            }
-                            title="Open in new tab"
-                          >
-                            <i className="fas fa-external-link-alt"></i>
-                          </Button>
-                          <Button
-                            onClick={() => handleRemoveUrl(url.id)}
-                            title="Delete URL"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </Button>
-                        </Buttons>
+                        <CheckButton
+                          onClick={handleAddUrl}
+                          hidden={!hasFormContent}
+                        >
+                          <i className="fas fa-check"></i>
+                        </CheckButton>
                       </TableCell>
                     </TableRow>
-                  ))}
-                  <TableRow>
-                    <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
-                      <Input
-                        ref={newIdInputRef}
-                        type="text"
-                        name="id"
-                        value={formData.id}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && hasFormContent) {
-                            e.preventDefault();
-                            handleAddUrl(e);
-                          }
-                        }}
-                        placeholder="Identifier"
-                        required
-                        autocomplete="off"
-                        data-1p-ignore
-                        data-form-type="other"
-                        data-lpignore="true"
-                      />
-                    </TableCell>
-                    <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
-                      <Input
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && hasFormContent) {
-                            e.preventDefault();
-                            handleAddUrl(e);
-                          }
-                        }}
-                        placeholder="Title"
-                        required
-                        autocomplete="off"
-                        data-1p-ignore
-                        data-form-type="other"
-                        data-lpignore="true"
-                      />
-                    </TableCell>
-                    <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
-                      <Input
-                        type="url"
-                        name="url"
-                        value={formData.url}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && hasFormContent) {
-                            e.preventDefault();
-                            handleAddUrl(e);
-                          }
-                        }}
-                        placeholder="URL"
-                        required
-                        autocomplete="off"
-                        data-1p-ignore
-                        data-form-type="other"
-                        data-lpignore="true"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {hasFormContent ? (
-                        <Button className="check-button" onClick={handleAddUrl}>
-                          <i className="fas fa-check"></i>
-                        </Button>
-                      ) : (
-                        <HiddenButton className="check-button">
-                          <i className="fas fa-check"></i>
-                        </HiddenButton>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                </tbody>
-              </Table>
+                  </tbody>
+                </Table>
+              </DndContext>
             )
           )}
         </>
