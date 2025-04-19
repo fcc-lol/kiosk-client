@@ -500,6 +500,7 @@ const Config = () => {
 
       // Update the order in the backend
       try {
+        setSaveStatus("saving");
         const newUrls = arrayMove(
           urls,
           urls.findIndex((u) => u.id === active.id),
@@ -509,8 +510,18 @@ const Config = () => {
 
         // Save the new order to the server
         await updateUrlOrder(newUrls.map((u) => u.id));
+        setSaveStatus("saved");
+        // Wait for the fade-out animation to complete before removing the status
+        setTimeout(() => {
+          setSaveStatus(null);
+        }, 2200);
       } catch (err) {
         setError(err.message);
+        setSaveStatus("error");
+        // Wait for the fade-out animation to complete before removing the status
+        setTimeout(() => {
+          setSaveStatus(null);
+        }, 2200);
         // Revert the order if the update fails
         const data = await fetchAvailableUrls();
         setUrls(data);
