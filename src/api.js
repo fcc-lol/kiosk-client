@@ -25,7 +25,9 @@ export const fetchAvailableUrls = async () => {
     if (!apiKey) {
       throw new Error("API key is required");
     }
-    const response = await fetch(`${API_BASE_URL}/urls?fccApiKey=${apiKey}`);
+    const response = await fetch(
+      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=false`
+    );
     await handleError(response);
     return response.json();
   } catch (error) {
