@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { socket, SOCKET_EVENTS } from "../socket";
-import { fetchAvailableUrls } from "../api";
+import { fetchAvailableUrlsWithTemplates } from "../api";
 
 const Container = styled.div`
   padding: 1rem 1rem 1.5rem 1rem;
@@ -78,7 +78,7 @@ function RemoteControl() {
     const initialize = async () => {
       socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
 
-      const urls = await fetchAvailableUrls();
+      const urls = await fetchAvailableUrlsWithTemplates();
       if (urls.length > 0) {
         setAvailableUrls(urls);
         if (pendingId && urls.some((item) => item.id === pendingId)) {
