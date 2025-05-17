@@ -36,6 +36,23 @@ export const fetchAvailableUrls = async () => {
   }
 };
 
+export const fetchAvailableUrlsWithTemplates = async () => {
+  try {
+    const apiKey = getApiKeyFromUrl();
+    if (!apiKey) {
+      throw new Error("API key is required");
+    }
+    const response = await fetch(
+      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=true`
+    );
+    await handleError(response);
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching URLs with templates:", error);
+    throw error;
+  }
+};
+
 export const addUrl = async (data) => {
   try {
     const apiKey = getApiKeyFromUrl();
