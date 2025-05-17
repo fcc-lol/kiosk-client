@@ -36,6 +36,15 @@ function SpringBoard() {
   const [availableUrls, setAvailableUrls] = useState([]);
   const [pendingId, setPendingId] = useState(null);
 
+  const isAutorotationDate = () => {
+    const now = new Date();
+    return (
+      now.getFullYear() === 2025 &&
+      now.getMonth() === 4 && // May is month 4 (0-based)
+      now.getDate() === 17
+    );
+  };
+
   useEffect(() => {
     const initialize = async () => {
       socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
@@ -51,6 +60,28 @@ function SpringBoard() {
     };
     initialize();
   }, [pendingId]);
+
+  useEffect(() => {
+    let rotationInterval;
+
+    if (isAutorotationDate() && availableUrls.length > 0) {
+      rotationInterval = setInterval(() => {
+        const currentIndex = availableUrls.findIndex(
+          (item) => item.id === currentId
+        );
+        const nextIndex = (currentIndex + 1) % availableUrls.length;
+        const nextId = availableUrls[nextIndex].id;
+        setCurrentId(nextId);
+        socket.emit(SOCKET_EVENTS.CHANGE_URL, nextId);
+      }, 30000); // 30 seconds
+    }
+
+    return () => {
+      if (rotationInterval) {
+        clearInterval(rotationInterval);
+      }
+    };
+  }, [availableUrls, currentId]);
 
   useEffect(() => {
     const handleCurrentUrlState = (newId) => {
