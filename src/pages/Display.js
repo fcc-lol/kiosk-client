@@ -45,17 +45,6 @@ function SpringBoard() {
     );
   };
 
-  const getRandomUrlId = (currentId) => {
-    const availableIds = availableUrls
-      .map((item) => item.id)
-      .filter((id) => id !== currentId); // Exclude current ID to avoid repeats
-
-    if (availableIds.length === 0) return currentId;
-
-    const randomIndex = Math.floor(Math.random() * availableIds.length);
-    return availableIds[randomIndex];
-  };
-
   useEffect(() => {
     const initialize = async () => {
       socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
@@ -75,12 +64,23 @@ function SpringBoard() {
   useEffect(() => {
     let rotationInterval;
 
+    const getRandomUrlId = (currentId) => {
+      const availableIds = availableUrls
+        .map((item) => item.id)
+        .filter((id) => id !== currentId); // Exclude current ID to avoid repeats
+
+      if (availableIds.length === 0) return currentId;
+
+      const randomIndex = Math.floor(Math.random() * availableIds.length);
+      return availableIds[randomIndex];
+    };
+
     if (isAutorotationDate() && availableUrls.length > 0) {
       rotationInterval = setInterval(() => {
         const nextId = getRandomUrlId(currentId);
         setCurrentId(nextId);
         socket.emit(SOCKET_EVENTS.CHANGE_URL, nextId);
-      }, 300000); // 5 minutes
+      }, 120000); // 2 minutes
     }
 
     return () => {
