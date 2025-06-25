@@ -1,7 +1,7 @@
 {
-  "app_id": "fcc-kiosk-client",
+  "app_id": "kiosk-client",
   "app_name": "FCC Kiosk Client",
-  "domain": "https://fcc-kiosk-client.leo.gd",
+  "domain": "https://kiosk.fcc.lol",
   "author": "leo",
   "created_on": "Thu 17 Apr 2025 11:27:08 AM EDT"
 }
