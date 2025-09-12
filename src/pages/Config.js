@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   addUrl,
   removeUrl,
-  fetchAvailableUrls,
+  fetchAvailableUrlsWithTemplates,
   editUrl,
   changeUrl,
   getCurrentUrl,
@@ -27,24 +27,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React from "react";
-
-// Function to process URL templates and replace API key variables
-const processUrlTemplate = (url) => {
-  if (!url) return url;
-
-  // Get the API key from URL parameters
-  const params = new URLSearchParams(window.location.search);
-  const apiKey = params.get("fccApiKey") || params.get("apiKey");
-
-  if (!apiKey) return url;
-
-  // Replace common API key variable patterns
-  return url
-    .replace(/\{\{fccApiKey\}\}/g, apiKey)
-    .replace(/\{\{apiKey\}\}/g, apiKey)
-    .replace(/\{\{FCC_API_KEY\}\}/g, apiKey)
-    .replace(/\{\{API_KEY\}\}/g, apiKey);
-};
 
 const Container = styled.div`
   margin: 0 auto;
@@ -297,7 +279,7 @@ const Config = () => {
     const fetchUrls = async () => {
       try {
         const [urlsData, currentUrlData] = await Promise.all([
-          fetchAvailableUrls(),
+          fetchAvailableUrlsWithTemplates(),
           getCurrentUrl()
         ]);
         setUrls(urlsData);
@@ -342,7 +324,7 @@ const Config = () => {
       await addUrl(formData);
       setFormData({ id: "", title: "", url: "" });
       // Refresh the URLs list
-      const data = await fetchAvailableUrls();
+      const data = await fetchAvailableUrlsWithTemplates();
       setUrls(data);
       setSaveStatus("saved");
       // Wait for the fade-out animation to complete before removing the status
@@ -381,7 +363,7 @@ const Config = () => {
       try {
         await removeUrl({ id });
         // Refresh the URLs list
-        const data = await fetchAvailableUrls();
+        const data = await fetchAvailableUrlsWithTemplates();
         setUrls(data);
       } catch (err) {
         setError(err.message);
@@ -458,7 +440,7 @@ const Config = () => {
             // > 1 because oldId is always included
             await editUrl(updateData);
             // Refresh the URLs list after successful edit
-            const data = await fetchAvailableUrls();
+            const data = await fetchAvailableUrlsWithTemplates();
             setUrls(data);
             setSaveStatus("saved");
             // Wait for the fade-out animation to complete before removing the status
@@ -474,7 +456,7 @@ const Config = () => {
             setSaveStatus(null);
           }, 2200);
           // Revert the edit if it failed
-          const data = await fetchAvailableUrls();
+          const data = await fetchAvailableUrlsWithTemplates();
           setUrls(data);
           // Reset the edit data for this ID
           setEditData((prev) => ({
@@ -552,7 +534,7 @@ const Config = () => {
           setSaveStatus(null);
         }, 2200);
         // Revert the order if the update fails
-        const data = await fetchAvailableUrls();
+        const data = await fetchAvailableUrlsWithTemplates();
         setUrls(data);
         setItems(data.map((url) => url.id));
       }
@@ -707,9 +689,7 @@ const Config = () => {
                               <Button
                                 onClick={() =>
                                   window.open(
-                                    processUrlTemplate(
-                                      editData[url.id]?.url || url.url
-                                    ),
+                                    editData[url.id]?.url || url.url,
                                     "_blank"
                                   )
                                 }
