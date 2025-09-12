@@ -9,24 +9,6 @@ import {
   updateUrlOrder
 } from "../api";
 import styled from "styled-components";
-
-// Function to process URL templates and replace API key variables
-const processUrlTemplate = (url) => {
-  if (!url) return url;
-
-  // Get the API key from URL parameters
-  const params = new URLSearchParams(window.location.search);
-  const apiKey = params.get("fccApiKey") || params.get("apiKey");
-
-  if (!apiKey) return url;
-
-  // Replace common API key variable patterns
-  return url
-    .replace(/\{\{fccApiKey\}\}/g, apiKey)
-    .replace(/\{\{apiKey\}\}/g, apiKey)
-    .replace(/\{\{FCC_API_KEY\}\}/g, apiKey)
-    .replace(/\{\{API_KEY\}\}/g, apiKey);
-};
 import "@fortawesome/fontawesome-free/css/all.css";
 import {
   DndContext,
@@ -45,6 +27,24 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React from "react";
+
+// Function to process URL templates and replace API key variables
+const processUrlTemplate = (url) => {
+  if (!url) return url;
+
+  // Get the API key from URL parameters
+  const params = new URLSearchParams(window.location.search);
+  const apiKey = params.get("fccApiKey") || params.get("apiKey");
+
+  if (!apiKey) return url;
+
+  // Replace common API key variable patterns
+  return url
+    .replace(/\{\{fccApiKey\}\}/g, apiKey)
+    .replace(/\{\{apiKey\}\}/g, apiKey)
+    .replace(/\{\{FCC_API_KEY\}\}/g, apiKey)
+    .replace(/\{\{API_KEY\}\}/g, apiKey);
+};
 
 const Container = styled.div`
   margin: 0 auto;
