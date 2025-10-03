@@ -30,11 +30,36 @@ const StatusIndicator = styled.div`
   background-color: ${(props) => (props.isConnected ? "#4CAF50" : "#f44336")};
 `;
 
+const FullscreenButton = styled.button`
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 16px);
+  right: 16px;
+  padding: 12px 16px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  z-index: 1000;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+`;
+
 function SpringBoard() {
   const [currentId, setCurrentId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [availableUrls, setAvailableUrls] = useState([]);
   const [pendingId, setPendingId] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const isAutorotationDate = () => {
     const now = new Date();
@@ -44,6 +69,29 @@ function SpringBoard() {
       now.getDate() === 17
     );
   };
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error("Error toggling fullscreen:", err);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     const initialize = async () => {
@@ -140,6 +188,9 @@ function SpringBoard() {
   return (
     <Display data-display-route="true">
       <StatusIndicator isConnected={isConnected} />
+      <FullscreenButton onClick={toggleFullscreen}>
+        {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+      </FullscreenButton>
       {currentUrl && (
         <App
           src={currentUrl}
