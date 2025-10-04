@@ -10,6 +10,7 @@ const Display = styled.div`
   margin-top: env(safe-area-inset-top);
   margin-bottom: env(safe-area-inset-bottom);
   overflow: hidden;
+  cursor: ${(props) => (props.hideCursor ? "none" : "default")};
 `;
 
 const App = styled.iframe`
@@ -59,19 +60,22 @@ function SpringBoard() {
   const [isConnected, setIsConnected] = useState(false);
   const [availableUrls, setAvailableUrls] = useState([]);
   const [pendingId, setPendingId] = useState(null);
-  const [isFullscreenButtonHidden, setIsFullscreenButtonHidden] =
-    useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Check if showFullscreenButton URL parameter is true
+  // Check URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const showFullscreenButton = urlParams.get("showFullscreenButton") === "true";
+  const onDevice = urlParams.get("onDevice") === "true";
 
   const isAutorotationDate = () => {
     const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const date = now.getDate();
+
     return (
-      now.getFullYear() === 2025 &&
-      now.getMonth() === 4 && // May is month 4 (0-based)
-      now.getDate() === 17
+      (year === 2025 && month === 4 && date === 17) || // May 17, 2025
+      (year === 2025 && month === 10 && date >= 7 && date <= 9) // Nov 7-9, 2025
     );
   };
 
@@ -79,7 +83,6 @@ function SpringBoard() {
     try {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
-        setIsFullscreenButtonHidden(true);
       } else {
         await document.exitFullscreen();
       }
@@ -87,6 +90,17 @@ function SpringBoard() {
       console.error("Error toggling fullscreen:", err);
     }
   };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     const initialize = async () => {
@@ -180,10 +194,15 @@ function SpringBoard() {
 
   const currentUrl = availableUrls.find((item) => item.id === currentId)?.url;
 
+  // Hide cursor if onDevice is true AND either:
+  // - showFullscreenButton is false, OR
+  // - we are in fullscreen mode
+  const hideCursor = onDevice && (!showFullscreenButton || isFullscreen);
+
   return (
-    <Display data-display-route="true">
+    <Display data-display-route="true" hideCursor={hideCursor}>
       <StatusIndicator isConnected={isConnected} />
-      {showFullscreenButton && !isFullscreenButtonHidden && (
+      {showFullscreenButton && !isFullscreen && (
         <FullscreenButton onClick={toggleFullscreen}>
           Enter Fullscreen
         </FullscreenButton>
