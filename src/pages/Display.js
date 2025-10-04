@@ -59,7 +59,12 @@ function SpringBoard() {
   const [isConnected, setIsConnected] = useState(false);
   const [availableUrls, setAvailableUrls] = useState([]);
   const [pendingId, setPendingId] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreenButtonHidden, setIsFullscreenButtonHidden] =
+    useState(false);
+
+  // Check if showFullscreenButton URL parameter is true
+  const urlParams = new URLSearchParams(window.location.search);
+  const showFullscreenButton = urlParams.get("showFullscreenButton") === "true";
 
   const isAutorotationDate = () => {
     const now = new Date();
@@ -74,6 +79,7 @@ function SpringBoard() {
     try {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
+        setIsFullscreenButtonHidden(true);
       } else {
         await document.exitFullscreen();
       }
@@ -81,17 +87,6 @@ function SpringBoard() {
       console.error("Error toggling fullscreen:", err);
     }
   };
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
 
   useEffect(() => {
     const initialize = async () => {
@@ -188,9 +183,11 @@ function SpringBoard() {
   return (
     <Display data-display-route="true">
       <StatusIndicator isConnected={isConnected} />
-      <FullscreenButton onClick={toggleFullscreen}>
-        {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-      </FullscreenButton>
+      {showFullscreenButton && !isFullscreenButtonHidden && (
+        <FullscreenButton onClick={toggleFullscreen}>
+          Enter Fullscreen
+        </FullscreenButton>
+      )}
       {currentUrl && (
         <App
           src={currentUrl}
