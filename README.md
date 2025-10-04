@@ -8,7 +8,7 @@ Created: Thu 17 Apr 2025 11:27:08 AM EDT
 
 ### Display (`/`)
 
-Full-screen kiosk display that shows the active URL in an iframe. Features socket-based remote control, connection status indicator, optional fullscreen button, and auto-rotation on May 17, 2025.
+Full-screen kiosk display that shows the active URL in an iframe. Features socket-based remote control, connection status indicator, optional fullscreen button, and auto-rotation on certain dates.
 
 #### URL Parameters
 
