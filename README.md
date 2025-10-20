@@ -8,7 +8,7 @@ Created: Thu 17 Apr 2025 11:27:08 AM EDT
 
 ### Display (`/`)
 
-Full-screen kiosk display that shows the active URL in an iframe. Features socket-based remote control, connection status indicator, optional fullscreen button, and auto-rotation on certain dates.
+Full-screen kiosk display that shows the active URL in an iframe. Features socket-based remote control, connection status indicator, optional fullscreen button, and auto-rotation on certain dates or when slideshow mode is enabled.
 
 #### URL Parameters
 
@@ -17,8 +17,9 @@ Full-screen kiosk display that shows the active URL in an iframe. Features socke
 | `fccApiKey`            | String         | API authentication key                                                                  |
 | `showFullscreenButton` | `true`/`false` | Shows a fullscreen button at the bottom-right when true                                 |
 | `onDevice`             | `true`/`false` | Hides cursor when true (unless fullscreen button is visible and not in fullscreen mode) |
+| `slideshow`            | `true`/`false` | Enables auto-rotation through URLs every 2 minutes when true                            |
 
-**Example:** `/?fccApiKey=your-key&showFullscreenButton=true&onDevice=true`
+**Example:** `/?fccApiKey=your-key&showFullscreenButton=true&onDevice=true&slideshow=true`
 
 ### Config (`/config`)
 

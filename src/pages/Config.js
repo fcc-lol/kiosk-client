@@ -7,7 +7,8 @@ import {
   editUrl,
   changeUrl,
   getCurrentUrl,
-  updateUrlOrder
+  updateUrlOrder,
+  toggleUrlEnabled
 } from "../api";
 import styled from "styled-components";
 import "@fortawesome/fontawesome-free/css/all.css";
@@ -42,11 +43,12 @@ const getProcessedUrl = async (urlId) => {
 };
 
 const Container = styled.div`
-  margin: 0 auto;
+  margin: 0;
   min-height: 100vh;
+  width: 100vw;
   color: #ffffff;
   background-color: #1f1f1f;
-  overflow-x: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 `;
 
@@ -129,6 +131,9 @@ const TableHeader = styled.th`
   &:nth-child(5) {
     width: 8rem;
   }
+  &:nth-child(6) {
+    width: 1rem;
+  }
 `;
 
 const StatusMessage = styled.span`
@@ -146,7 +151,11 @@ const TableRow = styled.tr`
 
 const SortableTableRow = styled.tr`
   background-color: transparent;
-  opacity: ${(props) => (props.isDragging ? 0.5 : 1)};
+  opacity: ${(props) => {
+    if (props.isDragging) return 0.5;
+    if (props.isDisabled) return 0.4;
+    return 1;
+  }};
   transform: ${(props) => CSS.Transform.toString(props.transform)};
   transition: ${(props) => props.transition};
 
@@ -167,7 +176,7 @@ const TableCell = styled.td`
   overflow: hidden;
   position: relative;
 
-  &:not(:first-child):not(:last-child)::after {
+  &:not(:first-child):not(:last-child):not(:nth-last-child(2))::after {
     content: "";
     position: absolute;
     top: 0;
@@ -182,16 +191,31 @@ const TableCell = styled.td`
     text-align: right;
     width: auto;
     white-space: nowrap;
-    padding-right: 1rem;
     overflow: visible;
   }
 
   ${TableRow}:hover &,
   ${SortableTableRow}:hover & {
-    &:not(:first-child):not(:last-child)::after {
+    &:not(:first-child):not(:last-child):not(:nth-last-child(2))::after {
       background: linear-gradient(to right, transparent, #2d2d2d);
     }
   }
+`;
+
+const SpacerHeader = styled.th`
+  width: 1rem;
+  padding: 0;
+`;
+
+const SpacerCell = styled.td`
+  width: 1rem;
+  padding: 0;
+`;
+
+const ButtonsWrapper = styled.div`
+  display: block;
+  padding-right: 1rem;
+  box-sizing: border-box;
 `;
 
 const Buttons = styled.div`
@@ -223,7 +247,16 @@ const DragHandle = styled.div`
   `}
 `;
 
-const SortableItem = ({ id, children, ...props }) => {
+const ToggleButton = styled(Button)`
+  color: ${(props) =>
+    props.enabled ? "rgba(255, 255, 255, 0.5)" : "rgba(255, 255, 255, 0.3)"};
+
+  &:hover {
+    color: rgba(255, 255, 255, 1);
+  }
+`;
+
+const SortableItem = ({ id, children, isDisabled, ...props }) => {
   const {
     attributes,
     listeners,
@@ -239,6 +272,7 @@ const SortableItem = ({ id, children, ...props }) => {
       transform={transform}
       transition={transition}
       isDragging={isDragging}
+      isDisabled={isDisabled}
       {...attributes}
       {...props}
     >
@@ -292,7 +326,7 @@ const Config = () => {
     const fetchUrls = async () => {
       try {
         const [urlsData, currentUrlData] = await Promise.all([
-          fetchAvailableUrls(),
+          fetchAvailableUrls(true), // Include disabled URLs in config view
           getCurrentUrl()
         ]);
         setUrls(urlsData);
@@ -337,7 +371,7 @@ const Config = () => {
       await addUrl(formData);
       setFormData({ id: "", title: "", url: "" });
       // Refresh the URLs list
-      const data = await fetchAvailableUrls();
+      const data = await fetchAvailableUrls(true);
       setUrls(data);
       setSaveStatus("saved");
       // Wait for the fade-out animation to complete before removing the status
@@ -376,7 +410,7 @@ const Config = () => {
       try {
         await removeUrl({ id });
         // Refresh the URLs list
-        const data = await fetchAvailableUrls();
+        const data = await fetchAvailableUrls(true);
         setUrls(data);
       } catch (err) {
         setError(err.message);
@@ -453,7 +487,7 @@ const Config = () => {
             // > 1 because oldId is always included
             await editUrl(updateData);
             // Refresh the URLs list after successful edit
-            const data = await fetchAvailableUrls();
+            const data = await fetchAvailableUrls(true);
             setUrls(data);
             setSaveStatus("saved");
             // Wait for the fade-out animation to complete before removing the status
@@ -469,7 +503,7 @@ const Config = () => {
             setSaveStatus(null);
           }, 2200);
           // Revert the edit if it failed
-          const data = await fetchAvailableUrls();
+          const data = await fetchAvailableUrls(true);
           setUrls(data);
           // Reset the edit data for this ID
           setEditData((prev) => ({
@@ -503,11 +537,43 @@ const Config = () => {
 
   const handleSwitchUrl = async (id) => {
     setError(null);
+    const previousUrlId = currentUrlId;
     try {
-      await changeUrl(id);
+      // Update UI immediately for instant feedback
       setCurrentUrlId(id);
+      await changeUrl(id);
+    } catch (err) {
+      // Revert on error
+      setCurrentUrlId(previousUrlId);
+      setError(err.message);
+    }
+  };
+
+  const handleToggleEnabled = async (id) => {
+    setError(null);
+    try {
+      const url = urls.find((u) => u.id === id);
+      const newEnabledState = !url.enabled;
+
+      setSaveStatus("saving");
+      await toggleUrlEnabled(id, newEnabledState);
+
+      // Update local state
+      const updatedUrls = urls.map((u) =>
+        u.id === id ? { ...u, enabled: newEnabledState } : u
+      );
+      setUrls(updatedUrls);
+
+      setSaveStatus("saved");
+      setTimeout(() => {
+        setSaveStatus(null);
+      }, 2200);
     } catch (err) {
       setError(err.message);
+      setSaveStatus("error");
+      setTimeout(() => {
+        setSaveStatus(null);
+      }, 2200);
     }
   };
 
@@ -547,7 +613,7 @@ const Config = () => {
           setSaveStatus(null);
         }, 2200);
         // Revert the order if the update fails
-        const data = await fetchAvailableUrls();
+        const data = await fetchAvailableUrls(true);
         setUrls(data);
         setItems(data.map((url) => url.id));
       }
@@ -614,6 +680,7 @@ const Config = () => {
                             : "Saved"}
                         </SaveStatus>
                       </TableHeader>
+                      <SpacerHeader />
                     </tr>
                   </thead>
                   <tbody>
@@ -622,7 +689,11 @@ const Config = () => {
                       strategy={verticalListSortingStrategy}
                     >
                       {urls.map((url, index) => (
-                        <SortableItem key={url.id} id={url.id}>
+                        <SortableItem
+                          key={url.id}
+                          id={url.id}
+                          isDisabled={url.enabled === false}
+                        >
                           <TableCell
                             isOdd={index % 2 === 0}
                             isLastRow={index === urls.length - 1}
@@ -690,42 +761,72 @@ const Config = () => {
                             />
                           </TableCell>
                           <TableCell>
-                            <Buttons>
-                              {currentUrlId !== url.id && (
+                            <ButtonsWrapper>
+                              <Buttons>
                                 <Button
                                   onClick={() => handleSwitchUrl(url.id)}
                                   title="Switch to this URL"
+                                  style={{
+                                    opacity:
+                                      currentUrlId === url.id ||
+                                      url.enabled === false
+                                        ? 0
+                                        : 1,
+                                    pointerEvents:
+                                      currentUrlId === url.id ||
+                                      url.enabled === false
+                                        ? "none"
+                                        : "auto"
+                                  }}
                                 >
                                   <i className="fas fa-play"></i>
                                 </Button>
-                              )}
-                              <Button
-                                onClick={async () => {
-                                  const processedUrl = await getProcessedUrl(
-                                    url.id
-                                  );
-                                  if (processedUrl) {
-                                    window.open(processedUrl, "_blank");
-                                  } else {
-                                    // Fallback to raw URL if processing fails
-                                    window.open(
-                                      editData[url.id]?.url || url.url,
-                                      "_blank"
-                                    );
+                                <ToggleButton
+                                  onClick={() => handleToggleEnabled(url.id)}
+                                  enabled={url.enabled !== false}
+                                  title={
+                                    url.enabled !== false
+                                      ? "Disable URL"
+                                      : "Enable URL"
                                   }
-                                }}
-                                title="Open in new tab"
-                              >
-                                <i className="fas fa-external-link-alt"></i>
-                              </Button>
-                              <Button
-                                onClick={() => handleRemoveUrl(url.id)}
-                                title="Delete URL"
-                              >
-                                <i className="fas fa-trash"></i>
-                              </Button>
-                            </Buttons>
+                                >
+                                  <i
+                                    className={
+                                      url.enabled !== false
+                                        ? "fas fa-eye"
+                                        : "fas fa-eye-slash"
+                                    }
+                                  ></i>
+                                </ToggleButton>
+                                <Button
+                                  onClick={async () => {
+                                    const processedUrl = await getProcessedUrl(
+                                      url.id
+                                    );
+                                    if (processedUrl) {
+                                      window.open(processedUrl, "_blank");
+                                    } else {
+                                      // Fallback to raw URL if processing fails
+                                      window.open(
+                                        editData[url.id]?.url || url.url,
+                                        "_blank"
+                                      );
+                                    }
+                                  }}
+                                  title="Open in new tab"
+                                >
+                                  <i className="fas fa-external-link-alt"></i>
+                                </Button>
+                                <Button
+                                  onClick={() => handleRemoveUrl(url.id)}
+                                  title="Delete URL"
+                                >
+                                  <i className="fas fa-trash"></i>
+                                </Button>
+                              </Buttons>
+                            </ButtonsWrapper>
                           </TableCell>
+                          <SpacerCell />
                         </SortableItem>
                       ))}
                     </SortableContext>
@@ -800,6 +901,7 @@ const Config = () => {
                           <i className="fas fa-check"></i>
                         </CheckButton>
                       </TableCell>
+                      <SpacerCell />
                     </TableRow>
                   </tbody>
                 </Table>

@@ -19,14 +19,14 @@ const handleError = async (response) => {
   }
 };
 
-export const fetchAvailableUrls = async () => {
+export const fetchAvailableUrls = async (includeDisabled = false) => {
   try {
     const apiKey = getApiKeyFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
     const response = await fetch(
-      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=false`
+      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=false&includeDisabled=${includeDisabled}`
     );
     await handleError(response);
     return response.json();
@@ -181,6 +181,31 @@ export const updateUrlOrder = async (orderedIds) => {
     return response.json();
   } catch (error) {
     console.error("Error updating URL order:", error);
+    throw error;
+  }
+};
+
+export const toggleUrlEnabled = async (id, enabled) => {
+  try {
+    const apiKey = getApiKeyFromUrl();
+    if (!apiKey) {
+      throw new Error("API key is required");
+    }
+    const response = await fetch(`${API_BASE_URL}/toggle-url-enabled`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id,
+        enabled,
+        fccApiKey: apiKey
+      })
+    });
+    await handleError(response);
+    return response.json();
+  } catch (error) {
+    console.error("Error toggling URL enabled state:", error);
     throw error;
   }
 };

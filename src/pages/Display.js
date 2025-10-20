@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
 import { socket, SOCKET_EVENTS } from "../socket";
 import { fetchAvailableUrlsWithTemplates } from "../api";
@@ -19,6 +19,26 @@ const App = styled.iframe`
   border: none;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: ${(props) => props.opacity || 1};
+  visibility: ${(props) => (props.hidden ? "hidden" : "visible")};
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: ${(props) => (props.hidden ? "none" : "auto")};
+`;
+
+const BlackOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: ${(props) => props.opacity || 0};
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: none;
+  z-index: 10;
 `;
 
 const StatusIndicator = styled.div`
@@ -57,17 +77,30 @@ const FullscreenButton = styled.button`
 
 function SpringBoard() {
   const [currentId, setCurrentId] = useState("");
+  const [nextId, setNextId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [availableUrls, setAvailableUrls] = useState([]);
   const [pendingId, setPendingId] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(true);
+  const [blackOverlayOpacity, setBlackOverlayOpacity] = useState(0);
+  const [iframe1Id, setIframe1Id] = useState("");
+  const [iframe2Id, setIframe2Id] = useState("");
 
   // Check URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const showFullscreenButton = urlParams.get("showFullscreenButton") === "true";
   const onDevice = urlParams.get("onDevice") === "true";
+  const slideshowMode = urlParams.get("slideshow") === "true";
+  // Rotation interval in seconds (default: 30 seconds)
+  const rotationIntervalSeconds = parseInt(
+    urlParams.get("rotationInterval") || "60",
+    10
+  );
+  const rotationIntervalMs = rotationIntervalSeconds * 1000;
 
-  const isAutorotationDate = () => {
+  const isAutorotationDate = useCallback(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
@@ -77,7 +110,11 @@ function SpringBoard() {
       (year === 2025 && month === 4 && date === 17) || // May 17, 2025
       (year === 2025 && month === 10 && date >= 7 && date <= 9) // Nov 7-9, 2025
     );
-  };
+  }, []);
+
+  const shouldAutorotate = useCallback(() => {
+    return slideshowMode || isAutorotationDate();
+  }, [slideshowMode, isAutorotationDate]);
 
   const toggleFullscreen = async () => {
     try {
@@ -118,26 +155,99 @@ function SpringBoard() {
     initialize();
   }, [pendingId]);
 
-  useEffect(() => {
-    let rotationInterval;
-
-    const getRandomUrlId = (currentId) => {
+  const getRandomUrlId = useCallback(
+    (excludeId) => {
       const availableIds = availableUrls
         .map((item) => item.id)
-        .filter((id) => id !== currentId); // Exclude current ID to avoid repeats
+        .filter((id) => id !== excludeId); // Exclude specified ID to avoid repeats
 
-      if (availableIds.length === 0) return currentId;
+      if (availableIds.length === 0) return excludeId;
 
       const randomIndex = Math.floor(Math.random() * availableIds.length);
       return availableIds[randomIndex];
-    };
+    },
+    [availableUrls]
+  );
 
-    if (isAutorotationDate() && availableUrls.length > 0) {
-      rotationInterval = setInterval(() => {
-        const nextId = getRandomUrlId(currentId);
+  // Initialize iframe IDs when slideshow mode starts
+  useEffect(() => {
+    if (
+      shouldAutorotate() &&
+      availableUrls.length > 1 &&
+      currentId &&
+      !iframe1Id
+    ) {
+      // Initialize both iframes on first load
+      setIframe1Id(currentId);
+      const prefetchNextId = getRandomUrlId(currentId);
+      setNextId(prefetchNextId);
+      setIframe2Id(prefetchNextId);
+    }
+  }, [currentId, availableUrls, shouldAutorotate, getRandomUrlId, iframe1Id]);
+
+  // Transition to next iframe
+  const transitionToNext = useCallback(() => {
+    if (isTransitioning || !nextId || !availableUrls.length) return;
+
+    setIsTransitioning(true);
+
+    // Step 1: Fade to black (500ms)
+    setBlackOverlayOpacity(1);
+
+    setTimeout(() => {
+      // Step 2: Switch which iframe is visible
+      setShowCurrent((prevShowCurrent) => {
+        const newShowCurrent = !prevShowCurrent;
+
+        // Update current ID
         setCurrentId(nextId);
         socket.emit(SOCKET_EVENTS.CHANGE_URL, nextId);
-      }, 120000); // 2 minutes
+
+        // Calculate next URL for prefetching
+        const availableIds = availableUrls
+          .map((item) => item.id)
+          .filter((id) => id !== nextId);
+        const newNextId =
+          availableIds.length > 0
+            ? availableIds[Math.floor(Math.random() * availableIds.length)]
+            : nextId;
+
+        setNextId(newNextId);
+
+        // Update the hidden iframe with the new next URL
+        if (newShowCurrent) {
+          // iframe1 is now visible (showing nextId), update iframe2 with newNextId
+          setIframe2Id(newNextId);
+        } else {
+          // iframe2 is now visible (showing nextId), update iframe1 with newNextId
+          setIframe1Id(newNextId);
+        }
+
+        return newShowCurrent;
+      });
+
+      // Step 3: Fade from black (500ms)
+      setBlackOverlayOpacity(0);
+
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 500);
+    }, 500);
+  }, [isTransitioning, nextId, availableUrls]);
+
+  // Store latest transitionToNext in a ref
+  const transitionToNextRef = useRef(transitionToNext);
+  useEffect(() => {
+    transitionToNextRef.current = transitionToNext;
+  }, [transitionToNext]);
+
+  useEffect(() => {
+    let rotationInterval;
+
+    if (shouldAutorotate() && availableUrls.length > 0 && nextId) {
+      rotationInterval = setInterval(() => {
+        transitionToNextRef.current();
+      }, rotationIntervalMs);
     }
 
     return () => {
@@ -145,7 +255,7 @@ function SpringBoard() {
         clearInterval(rotationInterval);
       }
     };
-  }, [availableUrls, currentId]);
+  }, [availableUrls, shouldAutorotate, rotationIntervalMs, nextId]);
 
   useEffect(() => {
     const handleCurrentUrlState = (newId) => {
@@ -193,11 +303,17 @@ function SpringBoard() {
   }, []);
 
   const currentUrl = availableUrls.find((item) => item.id === currentId)?.url;
+  const iframe1Url = availableUrls.find((item) => item.id === iframe1Id)?.url;
+  const iframe2Url = availableUrls.find((item) => item.id === iframe2Id)?.url;
 
   // Hide cursor if onDevice is true AND either:
   // - showFullscreenButton is false, OR
   // - we are in fullscreen mode
   const hideCursor = onDevice && (!showFullscreenButton || isFullscreen);
+
+  // In slideshow mode, we have two iframes and alternate between them
+  // In normal mode, we just show the current iframe
+  const useDoubleBuffer = shouldAutorotate() && availableUrls.length > 1;
 
   return (
     <Display data-display-route="true" hideCursor={hideCursor}>
@@ -207,12 +323,47 @@ function SpringBoard() {
           Enter Fullscreen
         </FullscreenButton>
       )}
-      {currentUrl && (
-        <App
-          src={currentUrl}
-          title="Current URL"
-          sandbox="allow-same-origin allow-scripts"
-        />
+
+      {useDoubleBuffer ? (
+        <>
+          {/* iframe1 (visible when showCurrent is true) */}
+          {iframe1Url && (
+            <App
+              key="iframe1"
+              src={iframe1Url}
+              title="Iframe 1"
+              sandbox="allow-same-origin allow-scripts"
+              hidden={!showCurrent}
+              opacity={showCurrent ? 1 : 0}
+            />
+          )}
+
+          {/* iframe2 (visible when showCurrent is false) */}
+          {iframe2Url && (
+            <App
+              key="iframe2"
+              src={iframe2Url}
+              title="Iframe 2"
+              sandbox="allow-same-origin allow-scripts"
+              hidden={showCurrent}
+              opacity={showCurrent ? 0 : 1}
+            />
+          )}
+
+          {/* Black overlay for transitions */}
+          <BlackOverlay opacity={blackOverlayOpacity} />
+        </>
+      ) : (
+        <>
+          {/* Normal mode - single iframe */}
+          {currentUrl && (
+            <App
+              src={currentUrl}
+              title="Current URL"
+              sandbox="allow-same-origin allow-scripts"
+            />
+          )}
+        </>
       )}
     </Display>
   );
