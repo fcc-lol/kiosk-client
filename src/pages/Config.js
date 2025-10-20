@@ -314,6 +314,7 @@ const Config = () => {
   const inputRefs = useRef({});
   const newIdInputRef = useRef(null);
   const [items, setItems] = useState([]);
+  const [togglingUrls, setTogglingUrls] = useState(new Set());
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -550,19 +551,30 @@ const Config = () => {
   };
 
   const handleToggleEnabled = async (id) => {
+    // Prevent multiple simultaneous toggle requests for the same URL
+    if (togglingUrls.has(id)) {
+      return;
+    }
+
     setError(null);
+
+    // Mark this URL as being toggled
+    setTogglingUrls((prev) => new Set(prev).add(id));
+
     try {
       const url = urls.find((u) => u.id === id);
-      const newEnabledState = !url.enabled;
+      // Normalize current state (undefined and true are both "enabled")
+      const currentEnabledState = url.enabled !== false;
+      const newEnabledState = !currentEnabledState;
 
-      setSaveStatus("saving");
-      await toggleUrlEnabled(id, newEnabledState);
-
-      // Update local state
+      // Update local state optimistically first
       const updatedUrls = urls.map((u) =>
         u.id === id ? { ...u, enabled: newEnabledState } : u
       );
       setUrls(updatedUrls);
+
+      setSaveStatus("saving");
+      await toggleUrlEnabled(id, newEnabledState);
 
       setSaveStatus("saved");
       setTimeout(() => {
@@ -574,6 +586,17 @@ const Config = () => {
       setTimeout(() => {
         setSaveStatus(null);
       }, 2200);
+
+      // Revert the optimistic update on error
+      const data = await fetchAvailableUrls(true);
+      setUrls(data);
+    } finally {
+      // Remove the URL from the toggling set
+      setTogglingUrls((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -784,11 +807,20 @@ const Config = () => {
                                 <ToggleButton
                                   onClick={() => handleToggleEnabled(url.id)}
                                   enabled={url.enabled !== false}
+                                  disabled={togglingUrls.has(url.id)}
                                   title={
                                     url.enabled !== false
                                       ? "Disable URL"
                                       : "Enable URL"
                                   }
+                                  style={{
+                                    cursor: togglingUrls.has(url.id)
+                                      ? "not-allowed"
+                                      : "pointer",
+                                    opacity: togglingUrls.has(url.id)
+                                      ? 0.5
+                                      : undefined
+                                  }}
                                 >
                                   <i
                                     className={
