@@ -668,277 +668,263 @@ const Config = () => {
         </Table>
       ) : (
         <>
-          {!error && urls.length === 0 ? (
-            <Table>
-              <thead>
-                <tr>
-                  <TableHeader>
-                    <StatusMessage>No URLs configured yet</StatusMessage>
-                  </TableHeader>
-                </tr>
-              </thead>
-            </Table>
-          ) : (
-            !error && (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <Table>
-                  <thead>
-                    <tr>
-                      <TableHeader></TableHeader>
-                      <TableHeader>ID</TableHeader>
-                      <TableHeader>Title</TableHeader>
-                      <TableHeader>URL</TableHeader>
-                      <TableHeader>
-                        <SaveStatus status={saveStatus}>
-                          {saveStatus === "saving"
-                            ? "Saving..."
-                            : saveStatus === "saved"
-                            ? "Saved"
-                            : saveStatus === "error"
-                            ? "Error"
-                            : "Saved"}
-                        </SaveStatus>
-                      </TableHeader>
-                      <SpacerHeader />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <SortableContext
-                      items={items}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {urls.map((url, index) => (
-                        <SortableItem
-                          key={url.id}
-                          id={url.id}
-                          isDisabled={url.enabled === false}
+          {!error && (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <Table>
+                <thead>
+                  <tr>
+                    <TableHeader></TableHeader>
+                    <TableHeader>ID</TableHeader>
+                    <TableHeader>Title</TableHeader>
+                    <TableHeader>URL</TableHeader>
+                    <TableHeader>
+                      <SaveStatus status={saveStatus}>
+                        {saveStatus === "saving"
+                          ? "Saving..."
+                          : saveStatus === "saved"
+                          ? "Saved"
+                          : saveStatus === "error"
+                          ? "Error"
+                          : "Saved"}
+                      </SaveStatus>
+                    </TableHeader>
+                    <SpacerHeader />
+                  </tr>
+                </thead>
+                <tbody>
+                  <SortableContext
+                    items={items}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {urls.map((url, index) => (
+                      <SortableItem
+                        key={url.id}
+                        id={url.id}
+                        isDisabled={url.enabled === false}
+                      >
+                        <TableCell
+                          isOdd={index % 2 === 0}
+                          isLastRow={index === urls.length - 1}
                         >
-                          <TableCell
-                            isOdd={index % 2 === 0}
-                            isLastRow={index === urls.length - 1}
-                          >
-                            <Input
-                              ref={(el) =>
-                                (inputRefs.current[`${url.id}-id`] = el)
-                              }
-                              type="text"
-                              name="id"
-                              data-id={url.id}
-                              value={editData[url.id]?.id || url.id}
-                              onChange={(e) => handleEditInputChange(e, url.id)}
-                              onFocus={() => handleInputFocus(url.id, "id")}
-                              onBlur={(e) => handleInputBlur(e, url.id, "id")}
-                              disabled={false}
-                              autocomplete="off"
-                              data-1p-ignore
-                              data-form-type="other"
-                              data-lpignore="true"
-                            />
-                          </TableCell>
-                          <TableCell
-                            isOdd={index % 2 === 0}
-                            isLastRow={index === urls.length - 1}
-                          >
-                            <Input
-                              ref={(el) =>
-                                (inputRefs.current[`${url.id}-title`] = el)
-                              }
-                              type="text"
-                              name="title"
-                              data-id={url.id}
-                              value={editData[url.id]?.title || url.title}
-                              onChange={(e) => handleEditInputChange(e, url.id)}
-                              onFocus={() => handleInputFocus(url.id, "title")}
-                              onBlur={(e) =>
-                                handleInputBlur(e, url.id, "title")
-                              }
-                              autocomplete="off"
-                              data-1p-ignore
-                              data-form-type="other"
-                              data-lpignore="true"
-                            />
-                          </TableCell>
-                          <TableCell
-                            isOdd={index % 2 === 0}
-                            isLastRow={index === urls.length - 1}
-                          >
-                            <Input
-                              ref={(el) =>
-                                (inputRefs.current[`${url.id}-url`] = el)
-                              }
-                              type="url"
-                              name="url"
-                              data-id={url.id}
-                              value={editData[url.id]?.url || url.url}
-                              onChange={(e) => handleEditInputChange(e, url.id)}
-                              onFocus={() => handleInputFocus(url.id, "url")}
-                              onBlur={(e) => handleInputBlur(e, url.id, "url")}
-                              autocomplete="off"
-                              data-1p-ignore
-                              data-form-type="other"
-                              data-lpignore="true"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <ButtonsWrapper>
-                              <Buttons>
-                                <Button
-                                  onClick={() => handleSwitchUrl(url.id)}
-                                  title="Switch to this URL"
-                                  style={{
-                                    opacity:
-                                      currentUrlId === url.id ||
-                                      url.enabled === false
-                                        ? 0
-                                        : 1,
-                                    pointerEvents:
-                                      currentUrlId === url.id ||
-                                      url.enabled === false
-                                        ? "none"
-                                        : "auto"
-                                  }}
-                                >
-                                  <i className="fas fa-play"></i>
-                                </Button>
-                                <ToggleButton
-                                  onClick={() => handleToggleEnabled(url.id)}
-                                  enabled={url.enabled !== false}
-                                  disabled={togglingUrls.has(url.id)}
-                                  title={
+                          <Input
+                            ref={(el) =>
+                              (inputRefs.current[`${url.id}-id`] = el)
+                            }
+                            type="text"
+                            name="id"
+                            data-id={url.id}
+                            value={editData[url.id]?.id || url.id}
+                            onChange={(e) => handleEditInputChange(e, url.id)}
+                            onFocus={() => handleInputFocus(url.id, "id")}
+                            onBlur={(e) => handleInputBlur(e, url.id, "id")}
+                            disabled={false}
+                            autocomplete="off"
+                            data-1p-ignore
+                            data-form-type="other"
+                            data-lpignore="true"
+                          />
+                        </TableCell>
+                        <TableCell
+                          isOdd={index % 2 === 0}
+                          isLastRow={index === urls.length - 1}
+                        >
+                          <Input
+                            ref={(el) =>
+                              (inputRefs.current[`${url.id}-title`] = el)
+                            }
+                            type="text"
+                            name="title"
+                            data-id={url.id}
+                            value={editData[url.id]?.title || url.title}
+                            onChange={(e) => handleEditInputChange(e, url.id)}
+                            onFocus={() => handleInputFocus(url.id, "title")}
+                            onBlur={(e) => handleInputBlur(e, url.id, "title")}
+                            autocomplete="off"
+                            data-1p-ignore
+                            data-form-type="other"
+                            data-lpignore="true"
+                          />
+                        </TableCell>
+                        <TableCell
+                          isOdd={index % 2 === 0}
+                          isLastRow={index === urls.length - 1}
+                        >
+                          <Input
+                            ref={(el) =>
+                              (inputRefs.current[`${url.id}-url`] = el)
+                            }
+                            type="url"
+                            name="url"
+                            data-id={url.id}
+                            value={editData[url.id]?.url || url.url}
+                            onChange={(e) => handleEditInputChange(e, url.id)}
+                            onFocus={() => handleInputFocus(url.id, "url")}
+                            onBlur={(e) => handleInputBlur(e, url.id, "url")}
+                            autocomplete="off"
+                            data-1p-ignore
+                            data-form-type="other"
+                            data-lpignore="true"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <ButtonsWrapper>
+                            <Buttons>
+                              <Button
+                                onClick={() => handleSwitchUrl(url.id)}
+                                title="Switch to this URL"
+                                style={{
+                                  opacity:
+                                    currentUrlId === url.id ||
+                                    url.enabled === false
+                                      ? 0
+                                      : 1,
+                                  pointerEvents:
+                                    currentUrlId === url.id ||
+                                    url.enabled === false
+                                      ? "none"
+                                      : "auto"
+                                }}
+                              >
+                                <i className="fas fa-play"></i>
+                              </Button>
+                              <ToggleButton
+                                onClick={() => handleToggleEnabled(url.id)}
+                                enabled={url.enabled !== false}
+                                disabled={togglingUrls.has(url.id)}
+                                title={
+                                  url.enabled !== false
+                                    ? "Disable URL"
+                                    : "Enable URL"
+                                }
+                                style={{
+                                  cursor: togglingUrls.has(url.id)
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  opacity: togglingUrls.has(url.id)
+                                    ? 0.5
+                                    : undefined
+                                }}
+                              >
+                                <i
+                                  className={
                                     url.enabled !== false
-                                      ? "Disable URL"
-                                      : "Enable URL"
+                                      ? "fas fa-eye"
+                                      : "fas fa-eye-slash"
                                   }
-                                  style={{
-                                    cursor: togglingUrls.has(url.id)
-                                      ? "not-allowed"
-                                      : "pointer",
-                                    opacity: togglingUrls.has(url.id)
-                                      ? 0.5
-                                      : undefined
-                                  }}
-                                >
-                                  <i
-                                    className={
-                                      url.enabled !== false
-                                        ? "fas fa-eye"
-                                        : "fas fa-eye-slash"
-                                    }
-                                  ></i>
-                                </ToggleButton>
-                                <Button
-                                  onClick={async () => {
-                                    const processedUrl = await getProcessedUrl(
-                                      url.id
+                                ></i>
+                              </ToggleButton>
+                              <Button
+                                onClick={async () => {
+                                  const processedUrl = await getProcessedUrl(
+                                    url.id
+                                  );
+                                  if (processedUrl) {
+                                    window.open(processedUrl, "_blank");
+                                  } else {
+                                    // Fallback to raw URL if processing fails
+                                    window.open(
+                                      editData[url.id]?.url || url.url,
+                                      "_blank"
                                     );
-                                    if (processedUrl) {
-                                      window.open(processedUrl, "_blank");
-                                    } else {
-                                      // Fallback to raw URL if processing fails
-                                      window.open(
-                                        editData[url.id]?.url || url.url,
-                                        "_blank"
-                                      );
-                                    }
-                                  }}
-                                  title="Open in new tab"
-                                >
-                                  <i className="fas fa-external-link-alt"></i>
-                                </Button>
-                                <Button
-                                  onClick={() => handleRemoveUrl(url.id)}
-                                  title="Delete URL"
-                                >
-                                  <i className="fas fa-trash"></i>
-                                </Button>
-                              </Buttons>
-                            </ButtonsWrapper>
-                          </TableCell>
-                          <SpacerCell />
-                        </SortableItem>
-                      ))}
-                    </SortableContext>
-                    <TableRow>
-                      <TableCell></TableCell>
-                      <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
-                        <Input
-                          ref={newIdInputRef}
-                          type="text"
-                          name="id"
-                          value={formData.id}
-                          onChange={handleInputChange}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && hasFormContent) {
-                              e.preventDefault();
-                              handleAddUrl(e);
-                            }
-                          }}
-                          placeholder="Identifier"
-                          required
-                          autocomplete="off"
-                          data-1p-ignore
-                          data-form-type="other"
-                          data-lpignore="true"
-                        />
-                      </TableCell>
-                      <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
-                        <Input
-                          type="text"
-                          name="title"
-                          value={formData.title}
-                          onChange={handleInputChange}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && hasFormContent) {
-                              e.preventDefault();
-                              handleAddUrl(e);
-                            }
-                          }}
-                          placeholder="Title"
-                          required
-                          autocomplete="off"
-                          data-1p-ignore
-                          data-form-type="other"
-                          data-lpignore="true"
-                        />
-                      </TableCell>
-                      <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
-                        <Input
-                          type="url"
-                          name="url"
-                          value={formData.url}
-                          onChange={handleInputChange}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && hasFormContent) {
-                              e.preventDefault();
-                              handleAddUrl(e);
-                            }
-                          }}
-                          placeholder="URL"
-                          required
-                          autocomplete="off"
-                          data-1p-ignore
-                          data-form-type="other"
-                          data-lpignore="true"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <CheckButton
-                          onClick={handleAddUrl}
-                          hidden={!hasFormContent}
-                        >
-                          <i className="fas fa-check"></i>
-                        </CheckButton>
-                      </TableCell>
-                      <SpacerCell />
-                    </TableRow>
-                  </tbody>
-                </Table>
-              </DndContext>
-            )
+                                  }
+                                }}
+                                title="Open in new tab"
+                              >
+                                <i className="fas fa-external-link-alt"></i>
+                              </Button>
+                              <Button
+                                onClick={() => handleRemoveUrl(url.id)}
+                                title="Delete URL"
+                              >
+                                <i className="fas fa-trash"></i>
+                              </Button>
+                            </Buttons>
+                          </ButtonsWrapper>
+                        </TableCell>
+                        <SpacerCell />
+                      </SortableItem>
+                    ))}
+                  </SortableContext>
+                  <TableRow>
+                    <TableCell></TableCell>
+                    <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
+                      <Input
+                        ref={newIdInputRef}
+                        type="text"
+                        name="id"
+                        value={formData.id}
+                        onChange={handleInputChange}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && hasFormContent) {
+                            e.preventDefault();
+                            handleAddUrl(e);
+                          }
+                        }}
+                        placeholder="Identifier"
+                        required
+                        autocomplete="off"
+                        data-1p-ignore
+                        data-form-type="other"
+                        data-lpignore="true"
+                      />
+                    </TableCell>
+                    <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
+                      <Input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && hasFormContent) {
+                            e.preventDefault();
+                            handleAddUrl(e);
+                          }
+                        }}
+                        placeholder="Title"
+                        required
+                        autocomplete="off"
+                        data-1p-ignore
+                        data-form-type="other"
+                        data-lpignore="true"
+                      />
+                    </TableCell>
+                    <TableCell isOdd={urls.length % 2 === 0} isLastRow={true}>
+                      <Input
+                        type="url"
+                        name="url"
+                        value={formData.url}
+                        onChange={handleInputChange}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && hasFormContent) {
+                            e.preventDefault();
+                            handleAddUrl(e);
+                          }
+                        }}
+                        placeholder="URL"
+                        required
+                        autocomplete="off"
+                        data-1p-ignore
+                        data-form-type="other"
+                        data-lpignore="true"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <CheckButton
+                        onClick={handleAddUrl}
+                        hidden={!hasFormContent}
+                      >
+                        <i className="fas fa-check"></i>
+                      </CheckButton>
+                    </TableCell>
+                    <SpacerCell />
+                  </TableRow>
+                </tbody>
+              </Table>
+            </DndContext>
           )}
         </>
       )}

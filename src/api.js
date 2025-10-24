@@ -5,6 +5,11 @@ const getApiKeyFromUrl = () => {
   return params.get("fccApiKey") || params.get("apiKey");
 };
 
+const getScreenFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("screen") || "A";
+};
+
 const handleError = async (response) => {
   if (!response.ok) {
     let errorMessage;
@@ -22,11 +27,12 @@ const handleError = async (response) => {
 export const fetchAvailableUrls = async (includeDisabled = false) => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
     const response = await fetch(
-      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=false&includeDisabled=${includeDisabled}`
+      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=false&includeDisabled=${includeDisabled}&screen=${screen}`
     );
     await handleError(response);
     return response.json();
@@ -39,11 +45,12 @@ export const fetchAvailableUrls = async (includeDisabled = false) => {
 export const fetchAvailableUrlsWithTemplates = async () => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
     const response = await fetch(
-      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=true`
+      `${API_BASE_URL}/urls?fccApiKey=${apiKey}&processTemplates=true&screen=${screen}`
     );
     await handleError(response);
     return response.json();
@@ -56,6 +63,7 @@ export const fetchAvailableUrlsWithTemplates = async () => {
 export const addUrl = async (data) => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
@@ -64,7 +72,7 @@ export const addUrl = async (data) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ ...data, fccApiKey: apiKey })
+      body: JSON.stringify({ ...data, fccApiKey: apiKey, screen })
     });
     await handleError(response);
     return response.json();
@@ -77,6 +85,7 @@ export const addUrl = async (data) => {
 export const removeUrl = async (data) => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
@@ -85,7 +94,7 @@ export const removeUrl = async (data) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ ...data, fccApiKey: apiKey })
+      body: JSON.stringify({ ...data, fccApiKey: apiKey, screen })
     });
     await handleError(response);
     return response.json();
@@ -98,6 +107,7 @@ export const removeUrl = async (data) => {
 export const editUrl = async (data) => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
@@ -112,7 +122,8 @@ export const editUrl = async (data) => {
         newId: updateData.id,
         title: updateData.title,
         url: updateData.url,
-        fccApiKey: apiKey
+        fccApiKey: apiKey,
+        screen
       })
     });
     await handleError(response);
@@ -126,6 +137,7 @@ export const editUrl = async (data) => {
 export const changeUrl = async (id) => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
@@ -134,7 +146,7 @@ export const changeUrl = async (id) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ id, fccApiKey: apiKey })
+      body: JSON.stringify({ id, fccApiKey: apiKey, screen })
     });
     await handleError(response);
     return response.json();
@@ -147,11 +159,12 @@ export const changeUrl = async (id) => {
 export const getCurrentUrl = async () => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
     const response = await fetch(
-      `${API_BASE_URL}/current-url?fccApiKey=${apiKey}`
+      `${API_BASE_URL}/current-url?fccApiKey=${apiKey}&screen=${screen}`
     );
     await handleError(response);
     return response.json();
@@ -164,6 +177,7 @@ export const getCurrentUrl = async () => {
 export const updateUrlOrder = async (orderedIds) => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
@@ -174,7 +188,8 @@ export const updateUrlOrder = async (orderedIds) => {
       },
       body: JSON.stringify({
         orderedIds,
-        fccApiKey: apiKey
+        fccApiKey: apiKey,
+        screen
       })
     });
     await handleError(response);
@@ -188,6 +203,7 @@ export const updateUrlOrder = async (orderedIds) => {
 export const toggleUrlEnabled = async (id, enabled) => {
   try {
     const apiKey = getApiKeyFromUrl();
+    const screen = getScreenFromUrl();
     if (!apiKey) {
       throw new Error("API key is required");
     }
@@ -199,7 +215,8 @@ export const toggleUrlEnabled = async (id, enabled) => {
       body: JSON.stringify({
         id,
         enabled,
-        fccApiKey: apiKey
+        fccApiKey: apiKey,
+        screen
       })
     });
     await handleError(response);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
-import { socket, SOCKET_EVENTS } from "../socket";
+import { socket, SOCKET_EVENTS, getScreenFromUrl } from "../socket";
 import { fetchAvailableUrlsWithTemplates } from "../api";
 
 const Display = styled.div`
@@ -90,6 +90,7 @@ function SpringBoard() {
 
   // Check URL parameters
   const urlParams = new URLSearchParams(window.location.search);
+  const screen = getScreenFromUrl();
   const showFullscreenButton = urlParams.get("showFullscreenButton") === "true";
   const onDevice = urlParams.get("onDevice") === "true";
   const slideshowMode = urlParams.get("slideshow") === "true";
@@ -141,7 +142,7 @@ function SpringBoard() {
 
   useEffect(() => {
     const initialize = async () => {
-      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
+      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL, { screen });
 
       const urls = await fetchAvailableUrlsWithTemplates();
       if (urls.length > 0) {
@@ -153,7 +154,7 @@ function SpringBoard() {
       }
     };
     initialize();
-  }, [pendingId]);
+  }, [pendingId, screen]);
 
   const getRandomUrlId = useCallback(
     (excludeId) => {
@@ -201,7 +202,7 @@ function SpringBoard() {
 
         // Update current ID
         setCurrentId(nextId);
-        socket.emit(SOCKET_EVENTS.CHANGE_URL, nextId);
+        socket.emit(SOCKET_EVENTS.CHANGE_URL, { id: nextId, screen });
 
         // Calculate next URL for prefetching
         const availableIds = availableUrls
@@ -233,7 +234,7 @@ function SpringBoard() {
         setIsTransitioning(false);
       }, 500);
     }, 500);
-  }, [isTransitioning, nextId, availableUrls]);
+  }, [isTransitioning, nextId, availableUrls, screen]);
 
   // Store latest transitionToNext in a ref
   const transitionToNextRef = useRef(transitionToNext);
@@ -258,42 +259,61 @@ function SpringBoard() {
   }, [availableUrls, shouldAutorotate, rotationIntervalMs, nextId]);
 
   useEffect(() => {
-    const handleCurrentUrlState = (newId) => {
-      if (availableUrls.length === 0) {
-        setPendingId(newId);
-      } else if (availableUrls.some((item) => item.id === newId)) {
-        setCurrentId(newId);
-      } else {
-        console.warn("Received invalid ID:", newId);
+    const handleCurrentUrlState = (data) => {
+      // Handle both old format (string) and new format (object)
+      if (typeof data === "string") {
+        // Legacy format
+        if (availableUrls.length === 0) {
+          setPendingId(data);
+        } else if (availableUrls.some((item) => item.id === data)) {
+          setCurrentId(data);
+        } else {
+          console.warn("Received invalid ID:", data);
+        }
+      } else if (data && data.screen === screen) {
+        // New format with screen parameter
+        const newId = data.id;
+        if (availableUrls.length === 0) {
+          setPendingId(newId);
+        } else if (availableUrls.some((item) => item.id === newId)) {
+          setCurrentId(newId);
+        } else {
+          console.warn("Received invalid ID:", newId);
+        }
+      }
+    };
+
+    const handleCurrentUrlStates = (states) => {
+      // Handle initial state broadcast with all screens
+      if (states && states[screen]) {
+        const newId = states[screen];
+        if (availableUrls.length === 0) {
+          setPendingId(newId);
+        } else if (availableUrls.some((item) => item.id === newId)) {
+          setCurrentId(newId);
+        }
       }
     };
 
     socket.on("connect", () => {
       setIsConnected(true);
-      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
+      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL, { screen });
     });
 
     socket.on("disconnect", () => {
       setIsConnected(false);
     });
 
-    socket.on(SOCKET_EVENTS.CHANGE_URL, (newId) => {
-      if (availableUrls.some((item) => item.id === newId)) {
-        setCurrentId(newId);
-      } else {
-        console.warn("Received invalid ID:", newId);
-      }
-    });
-
     socket.on(SOCKET_EVENTS.CURRENT_URL_STATE, handleCurrentUrlState);
+    socket.on(SOCKET_EVENTS.CURRENT_URL_STATES, handleCurrentUrlStates);
 
     return () => {
       socket.off("connect");
       socket.off("disconnect");
-      socket.off(SOCKET_EVENTS.CHANGE_URL);
       socket.off(SOCKET_EVENTS.CURRENT_URL_STATE);
+      socket.off(SOCKET_EVENTS.CURRENT_URL_STATES);
     };
-  }, [availableUrls]);
+  }, [availableUrls, screen]);
 
   useEffect(() => {
     const preventContextMenu = (e) => e.preventDefault();

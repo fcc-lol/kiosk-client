@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { socket, SOCKET_EVENTS } from "../socket";
+import { socket, SOCKET_EVENTS, getScreenFromUrl } from "../socket";
 import { fetchAvailableUrlsWithTemplates } from "../api";
 
 const Container = styled.div`
@@ -73,10 +73,11 @@ function RemoteControl() {
   const [isConnected, setIsConnected] = useState(false);
   const [availableUrls, setAvailableUrls] = useState([]);
   const [pendingId, setPendingId] = useState(null);
+  const screen = getScreenFromUrl();
 
   useEffect(() => {
     const initialize = async () => {
-      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
+      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL, { screen });
 
       const urls = await fetchAvailableUrlsWithTemplates();
       if (urls.length > 0) {
@@ -88,20 +89,44 @@ function RemoteControl() {
       }
     };
     initialize();
-  }, [pendingId]);
+  }, [pendingId, screen]);
 
   useEffect(() => {
-    const handleCurrentUrlState = (newId) => {
-      if (availableUrls.length === 0) {
-        setPendingId(newId);
-      } else if (availableUrls.some((item) => item.id === newId)) {
-        setCurrentId(newId);
+    const handleCurrentUrlState = (data) => {
+      // Handle both old format (string) and new format (object)
+      if (typeof data === "string") {
+        // Legacy format
+        if (availableUrls.length === 0) {
+          setPendingId(data);
+        } else if (availableUrls.some((item) => item.id === data)) {
+          setCurrentId(data);
+        }
+      } else if (data && data.screen === screen) {
+        // New format with screen parameter
+        const newId = data.id;
+        if (availableUrls.length === 0) {
+          setPendingId(newId);
+        } else if (availableUrls.some((item) => item.id === newId)) {
+          setCurrentId(newId);
+        }
+      }
+    };
+
+    const handleCurrentUrlStates = (states) => {
+      // Handle initial state broadcast with all screens
+      if (states && states[screen]) {
+        const newId = states[screen];
+        if (availableUrls.length === 0) {
+          setPendingId(newId);
+        } else if (availableUrls.some((item) => item.id === newId)) {
+          setCurrentId(newId);
+        }
       }
     };
 
     socket.on("connect", () => {
       setIsConnected(true);
-      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL);
+      socket.emit(SOCKET_EVENTS.REQUEST_CURRENT_URL, { screen });
     });
 
     socket.on("disconnect", () => {
@@ -109,18 +134,20 @@ function RemoteControl() {
     });
 
     socket.on(SOCKET_EVENTS.CURRENT_URL_STATE, handleCurrentUrlState);
+    socket.on(SOCKET_EVENTS.CURRENT_URL_STATES, handleCurrentUrlStates);
 
     return () => {
       socket.off("connect");
       socket.off("disconnect");
       socket.off(SOCKET_EVENTS.CURRENT_URL_STATE);
+      socket.off(SOCKET_EVENTS.CURRENT_URL_STATES);
     };
-  }, [availableUrls]);
+  }, [availableUrls, screen]);
 
   const handleUrlChange = (newId) => {
     if (newId !== currentId) {
       setCurrentId(newId);
-      socket.emit(SOCKET_EVENTS.CHANGE_URL, newId);
+      socket.emit(SOCKET_EVENTS.CHANGE_URL, { id: newId, screen });
     }
   };
 
