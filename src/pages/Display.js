@@ -101,21 +101,9 @@ function SpringBoard() {
   );
   const rotationIntervalMs = rotationIntervalSeconds * 1000;
 
-  const isAutorotationDate = useCallback(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const date = now.getDate();
-
-    return (
-      (year === 2025 && month === 4 && date === 17) || // May 17, 2025
-      (year === 2025 && month === 10 && date >= 7 && date <= 9) // Nov 7-9, 2025
-    );
-  }, []);
-
   const shouldAutorotate = useCallback(() => {
-    return slideshowMode || isAutorotationDate();
-  }, [slideshowMode, isAutorotationDate]);
+    return slideshowMode;
+  }, [slideshowMode]);
 
   const toggleFullscreen = async () => {
     try {
