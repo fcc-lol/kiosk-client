@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StyleSheetManager } from "styled-components";
 import isPropValid from "@emotion/is-prop-valid";
 import Display from "./pages/Display";
+import DisplayPreload from "./pages/DisplayPreload";
 import RemoteControl from "./pages/RemoteControl";
 import Config from "./pages/Config";
 
@@ -13,6 +14,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Display />} />
+            <Route path="/display-preload" element={<DisplayPreload />} />
             <Route path="/remote-control" element={<RemoteControl />} />
             <Route path="/config" element={<Config />} />
           </Routes>
