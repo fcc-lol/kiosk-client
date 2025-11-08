@@ -22,13 +22,15 @@ Full-screen kiosk display that shows the active URL in an iframe. Features socke
 | `rotationInterval`     | Number         | `60`    | Rotation interval in seconds (only applies when slideshow mode is enabled)              |
 | `topOffset`            | Number         | `0`     | Reduces viewport height by specified pixels from the top                                |
 | `bottomOffset`         | Number         | `0`     | Reduces viewport height by specified pixels from the bottom                             |
+| `rightOffset`          | Number         | `0`     | Reduces viewport width from the right (can be negative to expand beyond viewport)       |
 
 **Examples:**
 
 - Basic display: `/?fccApiKey=your-key`
 - Screen B with slideshow: `/?fccApiKey=your-key&screen=B&slideshow=true&rotationInterval=30`
 - On-device fullscreen: `/?fccApiKey=your-key&showFullscreenButton=true&onDevice=true`
-- With bottom offset: `/?fccApiKey=your-key&bottomOffset=150`
+- With offsets: `/?fccApiKey=your-key&topOffset=100&bottomOffset=150&rightOffset=200`
+- Expand beyond viewport: `/?fccApiKey=your-key&rightOffset=-50`
 
 ### Display Preload (`/display-preload`)
 
@@ -45,12 +47,14 @@ Alternative display mode that preloads all URLs simultaneously in a scrollable l
 | `showLabels`           | `true`/`false` | `false` | Shows URL title/ID label on each frame for debugging                                    |
 | `topOffset`            | Number         | `0`     | Reduces viewport height by specified pixels from the top                                |
 | `bottomOffset`         | Number         | `0`     | Reduces viewport height by specified pixels from the bottom                             |
+| `rightOffset`          | Number         | `0`     | Reduces viewport width from the right (can be negative to expand beyond viewport)       |
 
 **Examples:**
 
 - Basic preload display: `/display-preload?fccApiKey=your-key`
 - With labels for debugging: `/display-preload?fccApiKey=your-key&showLabels=true`
-- Screen B with bottom offset: `/display-preload?fccApiKey=your-key&screen=B&bottomOffset=150`
+- With offsets: `/display-preload?fccApiKey=your-key&topOffset=80&bottomOffset=150&rightOffset=100`
+- Expand beyond viewport: `/display-preload?fccApiKey=your-key&rightOffset=-100`
 
 ### Config (`/config`)
 

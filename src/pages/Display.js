@@ -5,7 +5,7 @@ import { fetchAvailableUrlsWithTemplates } from "../api";
 
 const Display = styled.div`
   height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - ${(props) => props.topOffset || 0}px - ${(props) => props.bottomOffset || 0}px);
-  width: 100vw;
+  width: calc(100vw - ${(props) => props.rightOffset || 0}px);
   position: relative;
   margin-top: calc(env(safe-area-inset-top) + ${(props) => props.topOffset || 0}px);
   margin-bottom: env(safe-area-inset-bottom);
@@ -96,6 +96,7 @@ function SpringBoard() {
   const slideshowMode = urlParams.get("slideshow") === "true";
   const topOffset = parseInt(urlParams.get("topOffset") || "0", 10);
   const bottomOffset = parseInt(urlParams.get("bottomOffset") || "0", 10);
+  const rightOffset = parseInt(urlParams.get("rightOffset") || "0", 10);
   // Rotation interval in seconds (default: 30 seconds)
   const rotationIntervalSeconds = parseInt(
     urlParams.get("rotationInterval") || "60",
@@ -326,7 +327,7 @@ function SpringBoard() {
   const useDoubleBuffer = shouldAutorotate() && availableUrls.length > 1;
 
   return (
-    <Display data-display-route="true" hideCursor={hideCursor} topOffset={topOffset} bottomOffset={bottomOffset}>
+    <Display data-display-route="true" hideCursor={hideCursor} topOffset={topOffset} bottomOffset={bottomOffset} rightOffset={rightOffset}>
       <StatusIndicator isConnected={isConnected} />
       {showFullscreenButton && !isFullscreen && (
         <FullscreenButton onClick={toggleFullscreen}>

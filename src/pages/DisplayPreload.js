@@ -5,7 +5,7 @@ import { fetchAvailableUrlsWithTemplates } from "../api";
 
 const Container = styled.div`
   height: calc(100vh - ${(props) => props.topOffset || 0}px - ${(props) => props.bottomOffset || 0}px);
-  width: 100vw;
+  width: calc(100vw - ${(props) => props.rightOffset || 0}px);
   margin-top: ${(props) => props.topOffset || 0}px;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -28,7 +28,7 @@ const Container = styled.div`
 
 const FrameWrapper = styled.div`
   height: calc(100vh - ${(props) => props.topOffset || 0}px - ${(props) => props.bottomOffset || 0}px);
-  width: 100vw;
+  width: calc(100vw - ${(props) => props.rightOffset || 0}px);
   scroll-snap-align: start;
   scroll-snap-stop: always;
   position: relative;
@@ -108,6 +108,7 @@ function DisplayPreload() {
   const showLabels = urlParams.get("showLabels") === "true";
   const topOffset = parseInt(urlParams.get("topOffset") || "0", 10);
   const bottomOffset = parseInt(urlParams.get("bottomOffset") || "0", 10);
+  const rightOffset = parseInt(urlParams.get("rightOffset") || "0", 10);
 
   const toggleFullscreen = async () => {
     try {
@@ -247,6 +248,7 @@ function DisplayPreload() {
         hideCursor={hideCursor}
         topOffset={topOffset}
         bottomOffset={bottomOffset}
+        rightOffset={rightOffset}
         data-display-route="true"
       >
         {availableUrls.map((item) => (
@@ -254,6 +256,7 @@ function DisplayPreload() {
             key={item.id}
             topOffset={topOffset}
             bottomOffset={bottomOffset}
+            rightOffset={rightOffset}
             ref={(el) => {
               if (el) {
                 frameRefs.current[item.id] = el;
