@@ -20,6 +20,7 @@ Full-screen kiosk display that shows the active URL in an iframe. Features socke
 | `onDevice`             | `true`/`false` | `false` | Hides cursor when true (unless fullscreen button is visible and not in fullscreen mode) |
 | `slideshow`            | `true`/`false` | `false` | Enables auto-rotation through URLs at specified interval                                |
 | `rotationInterval`     | Number         | `60`    | Rotation interval in seconds (only applies when slideshow mode is enabled)              |
+| `topOffset`            | Number         | `0`     | Reduces viewport height by specified pixels from the top                                |
 | `bottomOffset`         | Number         | `0`     | Reduces viewport height by specified pixels from the bottom                             |
 
 **Examples:**
@@ -42,6 +43,7 @@ Alternative display mode that preloads all URLs simultaneously in a scrollable l
 | `showFullscreenButton` | `true`/`false` | `false` | Shows a fullscreen button at the bottom-right when true                                 |
 | `onDevice`             | `true`/`false` | `false` | Hides cursor when true (unless fullscreen button is visible and not in fullscreen mode) |
 | `showLabels`           | `true`/`false` | `false` | Shows URL title/ID label on each frame for debugging                                    |
+| `topOffset`            | Number         | `0`     | Reduces viewport height by specified pixels from the top                                |
 | `bottomOffset`         | Number         | `0`     | Reduces viewport height by specified pixels from the bottom                             |
 
 **Examples:**
