@@ -12,6 +12,17 @@ const Container = styled.div`
   -webkit-overflow-scrolling: touch;
   scroll-behavior: auto; /* No smooth scrolling */
   cursor: ${(props) => (props.hideCursor ? "none" : "default")};
+  
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 `;
 
 const FrameWrapper = styled.div`
