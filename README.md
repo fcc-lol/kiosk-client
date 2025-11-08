@@ -20,12 +20,35 @@ Full-screen kiosk display that shows the active URL in an iframe. Features socke
 | `onDevice`             | `true`/`false` | `false` | Hides cursor when true (unless fullscreen button is visible and not in fullscreen mode) |
 | `slideshow`            | `true`/`false` | `false` | Enables auto-rotation through URLs at specified interval                                |
 | `rotationInterval`     | Number         | `60`    | Rotation interval in seconds (only applies when slideshow mode is enabled)              |
+| `bottomOffset`         | Number         | `0`     | Reduces viewport height by specified pixels from the bottom                             |
 
 **Examples:**
 
 - Basic display: `/?fccApiKey=your-key`
 - Screen B with slideshow: `/?fccApiKey=your-key&screen=B&slideshow=true&rotationInterval=30`
 - On-device fullscreen: `/?fccApiKey=your-key&showFullscreenButton=true&onDevice=true`
+- With bottom offset: `/?fccApiKey=your-key&bottomOffset=150`
+
+### Display Preload (`/display-preload`)
+
+Alternative display mode that preloads all URLs simultaneously in a scrollable list. Each URL occupies a full screen-sized frame, and the view instantly scrolls to the active URL when changed via socket. Useful for faster transitions and reducing load times.
+
+#### URL Parameters
+
+| Parameter              | Values         | Default | Description                                                                             |
+| ---------------------- | -------------- | ------- | --------------------------------------------------------------------------------------- |
+| `fccApiKey`            | String         | -       | API authentication key (required)                                                       |
+| `screen`               | String         | `A`     | Screen identifier (A, B, C, etc.) - each screen has independent configuration           |
+| `showFullscreenButton` | `true`/`false` | `false` | Shows a fullscreen button at the bottom-right when true                                 |
+| `onDevice`             | `true`/`false` | `false` | Hides cursor when true (unless fullscreen button is visible and not in fullscreen mode) |
+| `showLabels`           | `true`/`false` | `false` | Shows URL title/ID label on each frame for debugging                                    |
+| `bottomOffset`         | Number         | `0`     | Reduces viewport height by specified pixels from the bottom                             |
+
+**Examples:**
+
+- Basic preload display: `/display-preload?fccApiKey=your-key`
+- With labels for debugging: `/display-preload?fccApiKey=your-key&showLabels=true`
+- Screen B with bottom offset: `/display-preload?fccApiKey=your-key&screen=B&bottomOffset=150`
 
 ### Config (`/config`)
 

@@ -4,7 +4,7 @@ import { socket, SOCKET_EVENTS, getScreenFromUrl } from "../socket";
 import { fetchAvailableUrlsWithTemplates } from "../api";
 
 const Display = styled.div`
-  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - ${(props) => props.bottomOffset || 0}px);
   width: 100vw;
   position: relative;
   margin-top: env(safe-area-inset-top);
@@ -94,6 +94,7 @@ function SpringBoard() {
   const showFullscreenButton = urlParams.get("showFullscreenButton") === "true";
   const onDevice = urlParams.get("onDevice") === "true";
   const slideshowMode = urlParams.get("slideshow") === "true";
+  const bottomOffset = parseInt(urlParams.get("bottomOffset") || "0", 10);
   // Rotation interval in seconds (default: 30 seconds)
   const rotationIntervalSeconds = parseInt(
     urlParams.get("rotationInterval") || "60",
@@ -324,7 +325,7 @@ function SpringBoard() {
   const useDoubleBuffer = shouldAutorotate() && availableUrls.length > 1;
 
   return (
-    <Display data-display-route="true" hideCursor={hideCursor}>
+    <Display data-display-route="true" hideCursor={hideCursor} bottomOffset={bottomOffset}>
       <StatusIndicator isConnected={isConnected} />
       {showFullscreenButton && !isFullscreen && (
         <FullscreenButton onClick={toggleFullscreen}>

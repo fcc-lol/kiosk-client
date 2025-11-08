@@ -4,7 +4,7 @@ import { socket, SOCKET_EVENTS, getScreenFromUrl } from "../socket";
 import { fetchAvailableUrlsWithTemplates } from "../api";
 
 const Container = styled.div`
-  height: 100vh;
+  height: calc(100vh - ${(props) => props.bottomOffset || 0}px);
   width: 100vw;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -26,7 +26,7 @@ const Container = styled.div`
 `;
 
 const FrameWrapper = styled.div`
-  height: 100vh;
+  height: calc(100vh - ${(props) => props.bottomOffset || 0}px);
   width: 100vw;
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -105,6 +105,7 @@ function DisplayPreload() {
   const showFullscreenButton = urlParams.get("showFullscreenButton") === "true";
   const onDevice = urlParams.get("onDevice") === "true";
   const showLabels = urlParams.get("showLabels") === "true";
+  const bottomOffset = parseInt(urlParams.get("bottomOffset") || "0", 10);
 
   const toggleFullscreen = async () => {
     try {
@@ -242,11 +243,13 @@ function DisplayPreload() {
       <Container
         ref={containerRef}
         hideCursor={hideCursor}
+        bottomOffset={bottomOffset}
         data-display-route="true"
       >
         {availableUrls.map((item) => (
           <FrameWrapper
             key={item.id}
+            bottomOffset={bottomOffset}
             ref={(el) => {
               if (el) {
                 frameRefs.current[item.id] = el;
