@@ -62,6 +62,7 @@ const Input = styled.input`
   font-family: inherit;
   padding: 0.5rem 1rem 0.5rem 0;
   height: 100%;
+  box-sizing: border-box;
 
   &:focus {
     outline: none;
