@@ -914,12 +914,16 @@ const Config = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      <CheckButton
-                        onClick={handleAddUrl}
-                        hidden={!hasFormContent}
-                      >
-                        <i className="fas fa-check"></i>
-                      </CheckButton>
+                      <ButtonsWrapper>
+                        <Buttons>
+                          <CheckButton
+                            onClick={handleAddUrl}
+                            hidden={!hasFormContent}
+                          >
+                            <i className="fas fa-check"></i>
+                          </CheckButton>
+                        </Buttons>
+                      </ButtonsWrapper>
                     </TableCell>
                     <SpacerCell />
                   </TableRow>
