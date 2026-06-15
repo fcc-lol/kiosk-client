@@ -229,6 +229,13 @@ const Buttons = styled.div`
   min-width: max-content;
 `;
 
+// Matches a Button's footprint so the add-row check can occupy the trash
+// slot and stay aligned with the action icons at any window width.
+const ButtonPlaceholder = styled.div`
+  min-width: 2rem;
+  height: 2rem;
+`;
+
 const DragHandle = styled.div`
   cursor: grab;
   padding: 0 1rem;
@@ -916,6 +923,9 @@ const Config = () => {
                     <TableCell>
                       <ButtonsWrapper>
                         <Buttons>
+                          <ButtonPlaceholder aria-hidden="true" />
+                          <ButtonPlaceholder aria-hidden="true" />
+                          <ButtonPlaceholder aria-hidden="true" />
                           <CheckButton
                             onClick={handleAddUrl}
                             hidden={!hasFormContent}
